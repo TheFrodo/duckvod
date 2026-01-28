@@ -170,7 +170,7 @@ func (s *Service) PopulateExternalChannelID(ctx context.Context) {
 		if c.ExtID != "" {
 			continue
 		}
-		twitcChannel, err := s.PlatformTwitch.GetChannel(ctx, c.Name)
+		twitcChannel, err := s.PlatformTwitch.GetChannel(ctx, &c.Name, nil)
 		if err != nil {
 			log.Error().Msg("error getting twitch channel")
 			continue
@@ -184,14 +184,14 @@ func (s *Service) PopulateExternalChannelID(ctx context.Context) {
 	}
 }
 
-func (s *Service) UpdateChannelImage(ctx context.Context, channelID uuid.UUID) error {
+func (s *Service) UpdateChannelImage(ctx context.Context, channelID uuid.UUID, checkIfExists bool) error {
 	channel, err := s.GetChannel(channelID)
 	if err != nil {
 		return fmt.Errorf("error getting channel: %v", err)
 	}
 
 	// Fetch channel from Twitch API
-	twitchChannel, err := s.PlatformTwitch.GetChannel(ctx, channel.Name)
+	twitchChannel, err := s.PlatformTwitch.GetChannel(ctx, &channel.Name, nil)
 	if err != nil {
 		return fmt.Errorf("error fetching twitch channel: %v", err)
 	}
@@ -199,6 +199,14 @@ func (s *Service) UpdateChannelImage(ctx context.Context, channelID uuid.UUID) e
 	env := config.GetEnvConfig()
 
 	// Download channel profile image
+	if checkIfExists {
+		exists := utils.FileExists(fmt.Sprintf("%s/%s/%s", env.VideosDir, twitchChannel.Login, "profile.png"))
+		if exists {
+			log.Debug().Msgf("channel profile image already exists for channel: %s", twitchChannel.Login)
+			return nil
+		}
+	}
+
 	err = utils.DownloadFile(twitchChannel.ProfileImageURL, fmt.Sprintf("%s/%s/%s", env.VideosDir, twitchChannel.Login, "profile.png"))
 	if err != nil {
 		return fmt.Errorf("error downloading channel profile image: %v", err)

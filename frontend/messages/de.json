@@ -310,7 +310,9 @@
       "proxyAddButton": "Hinzufügen",
       "proxyTypeLabel": "Wähle den Proxy-Typ",
       "whitelistChannelsLabel": "Whitelist-Kanäle",
-      "whitelistChannelsDescription": "Wähle Kanäle aus, die von der Verwendung des Proxys ausgeschlossen sind, falls aktiviert. Stattdessen wird dein Twitch-Token verwendet. Wähle Kanäle aus, die du abonniert hast."
+      "whitelistChannelsDescription": "Wähle Kanäle aus, die von der Verwendung des Proxys ausgeschlossen sind, falls aktiviert. Stattdessen wird dein Twitch-Token verwendet. Wähle Kanäle aus, die du abonniert hast.",
+      "watchWhileArchivingLabel": "Aktiviere Wiedergabe während des Archivierens",
+      "watchWhileArchivingDescription": "Lädt einen separaten HLS-Stream herunter, um Live-Streams während des Archivierens ansehen zu können. Dies verdoppelt den Speicherbedarf während der Live-Archivierung. Nur das Video ist abspielbar – der Chat wird nicht mit angezeigt."
     },
     "chatSettings": {
       "header": "Chat-Einstellungen",
@@ -345,7 +347,9 @@
     "updateVideoStorageUsage": "Speichernutzung für Videos aktualisieren",
     "updateVideoStorageUsageDescription": "Aktualisiere die Speichernutzung für alle Videos. Dies wird verwendet, um die Speichernutzung in der Videoliste und auf der Statistikseite anzuzeigen.",
     "processPlaylistVideoRules": "Playlist-Videoregeln verarbeiten",
-    "processPlaylistVideoRulesDescription": "Videoregeln für Playlists verarbeiten. Dies überprüft, ob Videos basierend auf den definierten Regeln zu den Playlists hinzugefügt werden sollten. Wird jede Stunde ausgeführt."
+    "processPlaylistVideoRulesDescription": "Videoregeln für Playlists verarbeiten. Dies überprüft, ob Videos basierend auf den definierten Regeln zu den Playlists hinzugefügt werden sollten. Wird jede Stunde ausgeführt.",
+    "updatePlatformChannels": "Plattformkanäle aktualisieren",
+    "updatePlatformChannelsDescription": "Aktualisiert die Kanalinformationen von der Plattform für alle Kanäle. Dazu gehören Anzeigename und Profilbild. Wird alle 12 Stunden ausgeführt."
   },
   "AdminUsersPage": {
     "title": "Admin - Benutzer",

@@ -119,6 +119,13 @@ func (s *Service) StartTask(ctx context.Context, task string) error {
 		}
 		log.Info().Str("task_id", fmt.Sprintf("%d", task.Job.ID)).Msgf("task created")
 
+	case "update_platform_channels":
+		task, err := s.RiverClient.Client.Insert(ctx, tasks_periodic.UpdateTwitchChannelsArgs{}, nil)
+		if err != nil {
+			return fmt.Errorf("error inserting task: %v", err)
+		}
+		log.Info().Str("task_id", fmt.Sprintf("%d", task.Job.ID)).Msgf("task created")
+
 	}
 
 	return nil
@@ -334,6 +341,8 @@ func (s *Service) StorageMigration() error {
 
 		// Build the update query with the new paths.
 		update := tx.Vod.UpdateOne(video)
+		update = update.SetFolderName(folderName)
+		update = update.SetFileName(fileName)
 		if video.VideoPath != "" {
 			ext := path.Ext(video.VideoPath)
 			if ext == ".m3u8" {
