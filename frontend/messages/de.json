@@ -11,7 +11,7 @@
   },
   "VideoPage": {
     "loading": "Video laden",
-    "error": "Error loading video"
+    "error": "Fehler beim Laden der Videos"
   },
   "SearchPage": {
     "title": "Suche",
