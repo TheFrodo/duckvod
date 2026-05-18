@@ -8,7 +8,7 @@ import VideoTitleBar from "@/app/components/videos/TitleBar";
 import ChatPlayer from "@/app/components/videos/ChatPlayer";
 import GanymedeLoadingText from "@/app/components/utils/GanymedeLoadingText";
 import useSettingsStore from "@/app/store/useSettingsStore";
-import { useFullscreen, useMediaQuery } from "@mantine/hooks";
+import { useFullscreenDocument, useMediaQuery } from "@mantine/hooks";
 import { env } from "next-runtime-env";
 import VideoLoginRequired from "@/app/components/videos/LoginRequired";
 import useAuthStore from "@/app/store/useAuthStore";
@@ -33,8 +33,7 @@ const VideoPage = ({ params }: { params: Promise<Params> }) => {
   const videoTheaterMode = useSettingsStore((state) => state.videoTheaterMode);
   const hideChat = useSettingsStore((state) => state.hideChat);
   const showChatHistogram = useSettingsStore((state) => state.showChatHistogram);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { ref, toggle, fullscreen } = useFullscreen();
+  const { fullscreen } = useFullscreenDocument();
 
   const { data, isPending, isError } = useFetchVideo({ id, with_channel: true, with_chapters: true, with_muted_segments: true })
 
@@ -67,77 +66,50 @@ const VideoPage = ({ params }: { params: Promise<Params> }) => {
     return <VideoLoginRequired video={data} />
   }
 
-  if (isMobile) {
-    return (
-      <Box className={classes.containerMobile}>
-
-        {/* Video player */}
-        <div>
-          <VideoPlayer video={data} ref={player} />
-        </div>
-
-        {/* Chat player */}
-        {data.chat_path && !hideChat && !data.processing && (
-          <div className={classes.chatColumnMobile}>
-            <ChatPlayer video={data} playerRef={player} />
-          </div>
-        )}
-
-        {/* Title bar */}
-        {!videoTheaterMode && <VideoTitleBar video={data} />}
-
-        {/* Items below the player are not available in mobile */}
-
-      </Box>
-    )
-  }
-
   return (
     <div>
-      {/* Hide navbar. I don't like doing this but the navbar ruins the experience */}
-      <style jsx>{`
-        :global(html)::-webkit-scrollbar {
-          display: none;
-        }
-        :global(html) {
-          -ms-overflow-style: none; /* IE and Edge */
-          scrollbar-width: none; /* Firefox */
-        }
-      `}</style>
-
-      {/* Player and chat section */}
-      <Box className={classes.container}>
+      {/* Player and chat section — single tree on both layouts so VideoPlayer/ChatPlayer instances persist across the breakpoint flip */}
+      <Box className={isMobile ? classes.containerMobile : classes.container}>
         {/* Player */}
-        <div className={!data.chat_path ? classes.leftColumnNoChat : classes.leftColumn}>
+        <div className={
+          isMobile
+            ? undefined
+            : (!data.chat_path ? classes.leftColumnNoChat : classes.leftColumn)
+        }>
           <div className={
-            videoTheaterMode || fullscreen ? classes.videoPlayerTheaterMode : classes.videoPlayer
+            isMobile
+              ? undefined
+              : (videoTheaterMode || fullscreen ? classes.videoPlayerTheaterMode : classes.videoPlayer)
           }>
             <VideoPlayer video={data} ref={player} />
           </div>
         </div>
 
-
         {/* Chat */}
         {data.chat_path && !hideChat && !data.processing && (
-          <div className={classes.rightColumn} style={{ height: "auto", maxHeight: "auto" }}>
-            <div className={
-              videoTheaterMode || fullscreen
-                ? classes.chatColumnTheaterMode
-                : classes.chatColumn
-            }
+          <div
+            className={isMobile ? classes.chatColumnMobile : classes.rightColumn}
+            style={isMobile ? undefined : { height: "auto", maxHeight: "auto" }}
+          >
+            <div
+              className={
+                isMobile
+                  ? undefined
+                  : (videoTheaterMode || fullscreen ? classes.chatColumnTheaterMode : classes.chatColumn)
+              }
+              style={isMobile ? { height: "100%" } : undefined}
             >
               <ChatPlayer video={data} playerRef={player} />
             </div>
           </div>
         )}
-
       </Box>
 
       {/* Title bar */}
       {!videoTheaterMode && <VideoTitleBar video={data} />}
 
-      {/* Video clips */}
-      {!data.processing && (
+      {/* Desktop-only sections render after the player/chat block so toggling them doesn't shift player position */}
+      {!isMobile && !data.processing && (
         <Container size="7xl" fluid={true} >
           {videoClipsError && (
             <div>Error loading clips</div>
@@ -148,13 +120,23 @@ const VideoPage = ({ params }: { params: Promise<Params> }) => {
         </Container>
       )}
 
-      {/* Chat Histogram */}
-      {(data.chat_path && (data.type != VideoType.Clip) && !isMobile && showChatHistogram && !data.processing) && (
+      {(!isMobile && data.chat_path && (data.type != VideoType.Clip) && showChatHistogram && !data.processing) && (
         <Container size="7xl" fluid={true} >
           <VideoChatHistogram videoId={data.id} playerRef={player} />
         </Container>
       )}
 
+      {!isMobile && (
+        <style jsx>{`
+          :global(html)::-webkit-scrollbar {
+            display: none;
+          }
+          :global(html) {
+            -ms-overflow-style: none; /* IE and Edge */
+            scrollbar-width: none; /* Firefox */
+          }
+        `}</style>
+      )}
     </div>
   );
 }

@@ -48,6 +48,7 @@ const VideoPlayer = ({ video, ref }: Params) => {
   const [videoPoster, setVideoPoster] = useState<string>("");
 
   const hasStartedPlayback = useRef(false);
+  const hasInitializedPlaybackTime = useRef(false);
 
   const [playerVolume, setPlayerVolume] = useState(1);
 
@@ -56,6 +57,7 @@ const VideoPlayer = ({ video, ref }: Params) => {
 
   const videoTheaterMode = useSettingsStore((state) => state.videoTheaterMode);
   const showAbsoluteTime = useSettingsStore((state) => state.showAbsoluteTime);
+  const autoplayVideo = useSettingsStore((state) => state.autoplayVideo);
 
   const axiosPrivate = useAxiosPrivate();
   // get playback data
@@ -116,15 +118,19 @@ const VideoPlayer = ({ video, ref }: Params) => {
       }
     });
 
-    // Resume from server-side playback progress.
-    if (playbackData && playbackData.time) {
-      player.current!.currentTime = playbackData.time
-    }
-
-    // Check if time is set in the url
-    const time = searchParams.get("t");
-    if (time) {
-      player.current!.currentTime = parseInt(time);
+    if (!hasInitializedPlaybackTime.current) {
+      if (playbackData && playbackData.time != null) {
+        // Resume from server-side playback progress.
+        player.current!.currentTime = playbackData.time
+        hasInitializedPlaybackTime.current = true
+      } else {
+        // Check if time is set in the url
+        const time = searchParams.get("t");
+        if (time !== null) {
+          player.current!.currentTime = parseInt(time);
+          hasInitializedPlaybackTime.current = true
+        }
+      }
     }
 
   }, [player, video, playbackData, searchParams])
@@ -206,6 +212,7 @@ const VideoPlayer = ({ video, ref }: Params) => {
       load="eager"
       posterLoad="eager"
       volume={playerVolume}
+      autoPlay={autoplayVideo}
     >
       {showAbsoluteTime && <AbsoluteTimeDisplay streamedAt={video.streamed_at} />}
       <MediaProvider>

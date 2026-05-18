@@ -4,7 +4,7 @@ ARG YT_DLP_VERSION="2026.02.04"
 #
 # API Build
 #
-FROM golang:1.25-bookworm AS build-api
+FROM golang:1.26-bookworm AS build-api
 ARG GIT_SHA
 ARG GIT_TAG
 ENV GIT_SHA=$GIT_SHA
@@ -19,7 +19,7 @@ RUN make build_server build_worker
 #
 # Build yt-dlp
 #
-FROM python:3.12-bookworm AS build-yt-dlp
+FROM python:3.14-bookworm AS build-yt-dlp
 ARG YT_DLP_VERSION
 
 WORKDIR /app
@@ -68,10 +68,10 @@ COPY --from=build-yt-dlp /app/yt-dlp/yt-dlp /usr/local/bin/yt-dlp
 #
 # Frontend base
 #
-FROM node:24-alpine AS base-frontend
+FROM node:26-alpine AS base-frontend
 
 # Install dependencies only when needed
-FROM node:24-alpine AS deps
+FROM node:26-alpine AS deps
 
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
@@ -87,7 +87,7 @@ RUN \
 #
 # Frontend build
 #
-FROM node:24-alpine AS build-frontend
+FROM node:26-alpine AS build-frontend
 
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
@@ -105,7 +105,7 @@ RUN \
 #
 # Tests stage. Includes dependencies required for tests
 #
-FROM golang:1.25-bookworm AS tests
+FROM golang:1.26-bookworm AS tests
 
 RUN apt-get update && apt-get install -y --no-install-recommends python3 python3-pip ffmpeg make git
 
