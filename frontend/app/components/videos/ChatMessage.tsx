@@ -1,27 +1,107 @@
 /* eslint-disable @next/next/no-img-element */
-import { Comment, GanymedeFormattedBadge, GanymedeFormattedMessageFragment, GanymedeFormattedMessageType } from "@/app/hooks/useChat";
+import { Comment, GanymedeChatMessageKind, GanymedeFormattedBadge, GanymedeFormattedMessageFragment, GanymedeFormattedMessageType } from "@/app/hooks/useChat";
 import { durationToTime } from "@/app/util/util";
 import classes from "./ChatMessage.module.css"
-import { Text, Tooltip } from "@mantine/core"
+import { Text, Tooltip, UnstyledButton } from "@mantine/core"
 import { useTranslations } from "next-intl";
+import { IconBolt, IconMessageCircle, IconStar } from "@tabler/icons-react";
+import { MouseEvent } from "react"
 
 interface Params {
   comment: Comment;
+  highlightAnimation?: boolean;
   showTimestamp: boolean;
   timestampSeconds: number | null;
   onTimestampClick: () => void;
+  onUserNameClick?: (event: MouseEvent<HTMLButtonElement>) => void;
 }
 
-const ChatMessage = ({ comment, showTimestamp, timestampSeconds, onTimestampClick }: Params) => {
+const ChatMessage = ({ comment, highlightAnimation, showTimestamp, timestampSeconds, onTimestampClick, onUserNameClick }: Params) => {
   const t = useTranslations("VideoComponents");
   const hasTimestamp = timestampSeconds !== null;
   const timestampLabel = hasTimestamp ? durationToTime(Math.floor(timestampSeconds)) : "";
   const timestampActionLabel = hasTimestamp
     ? t("chatJumpToTimestamp", { timestamp: timestampLabel })
     : "";
+  const messageKind = comment.ganymede_chat_message_kind ?? GanymedeChatMessageKind.Normal;
+  const isEvent = messageKind === GanymedeChatMessageKind.UserNotice;
+  const isFirstMessage = messageKind === GanymedeChatMessageKind.FirstMessage;
+  const isHighlighted = messageKind === GanymedeChatMessageKind.Highlighted;
+  const isAction = messageKind === GanymedeChatMessageKind.Action || comment.message.is_action;
+  const bitsSpent = comment.message.bits_spent ?? 0;
+  const eventSystemMessage = isEvent ? comment.message.user_notice_params?.system_msg?.trim() : "";
+  const eventUserMessageFromParams = isEvent ? comment.message.user_notice_params?.params?.["user-message"]?.trim() : "";
+  const eventUserMessageFromBody = isEvent && eventSystemMessage && comment.message.body.startsWith(eventSystemMessage)
+    ? comment.message.body.slice(eventSystemMessage.length).trim()
+    : "";
+  const eventUserMessage = eventUserMessageFromParams || eventUserMessageFromBody;
+  const rowClassName = [
+    classes.chatMessage,
+    !showTimestamp ? classes.chatMessageNoTimestamp : "",
+    isEvent ? classes.eventMessage : "",
+    isFirstMessage ? classes.firstMessage : "",
+    isHighlighted ? classes.highlightedMessage : "",
+    isAction ? classes.actionMessage : "",
+    highlightAnimation ? classes.highlightAnimation : "",
+  ].filter(Boolean).join(" ");
+
+  const renderFormattedMessage = () => (
+    comment.ganymede_formatted_message && comment.ganymede_formatted_message.map(
+      (fragment: GanymedeFormattedMessageFragment, index: number) => {
+        switch (fragment.type) {
+          case GanymedeFormattedMessageType.Text:
+            return (
+              <Text key={`${comment._id}-text-${index}`} className={classes.message} span>
+                {fragment.text}
+              </Text>
+            )
+          case GanymedeFormattedMessageType.Emote: {
+            const emoteName = fragment.emote?.name || fragment.text;
+            // some emotes include a height, use the provided height or hardcode a standard height if not included
+            if ((fragment.emote?.height ?? 0) !== 0 && (fragment.emote?.width ?? 0) !== 0) {
+              return (
+                <Tooltip key={`${comment._id}-emote-${index}`} label={emoteName} position="top">
+                  <img
+                    src={fragment.url}
+                    className={classes.emoteImage}
+                    height={fragment.emote?.height}
+                    alt={emoteName}
+                  />
+                </Tooltip>
+              );
+            } else {
+              return (
+                <Tooltip key={`${comment._id}-emote-${index}`} label={emoteName} position="top">
+                  <img
+                    src={fragment.url}
+                    className={classes.emoteImage}
+                    alt={emoteName}
+                    height={28}
+                  />
+                </Tooltip>
+              );
+            }
+          }
+
+        }
+      }
+    )
+  );
+
+  const usernameComponent = (
+    <Text
+      fw={700}
+      lh={1}
+      size="sm"
+      style={{ color: comment.message.user_color }}
+      span
+    >
+      {comment.commenter.display_name}
+    </Text>
+  );
 
   return (
-    <div key={comment._id} className={`${classes.chatMessage} ${!showTimestamp ? classes.chatMessageNoTimestamp : ""}`}>
+    <div key={comment._id} className={rowClassName} data-message-id={comment._id}>
       {showTimestamp && (
         hasTimestamp ? (
           <button
@@ -38,6 +118,23 @@ const ChatMessage = ({ comment, showTimestamp, timestampSeconds, onTimestampClic
         )
       )}
       <span className={classes.content}>
+        {comment.message.reply && (
+          <span className={classes.replyPreview}>
+            <IconMessageCircle size={13} stroke={1.8} aria-hidden="true" />
+            <Text className={classes.replyAuthor} span>
+              {comment.message.reply.parent_display_name || comment.message.reply.parent_user_login}
+            </Text>
+            <Text className={classes.replyBody} span>
+              {comment.message.reply.parent_msg_body}
+            </Text>
+          </span>
+        )}
+        {(isEvent || isFirstMessage) && (
+          <span className={classes.eventLabel}>
+            <IconStar size={13} stroke={1.9} aria-hidden="true" />
+            {t(comment.ganymede_event_label || "chatEventGeneric")}
+          </span>
+        )}
         {/* badges */}
         <span>
           {comment.ganymede_formatted_badges &&
@@ -56,59 +153,39 @@ const ChatMessage = ({ comment, showTimestamp, timestampSeconds, onTimestampClic
               )
             )}
         </span>
+        {bitsSpent > 0 && (
+          <span className={classes.bitsLabel}>
+            <IconBolt size={12} stroke={2} aria-hidden="true" />
+            {bitsSpent.toLocaleString()} bits
+          </span>
+        )}
         {/* username */}
-        <Text
-          fw={700}
-          lh={1}
-          size="sm"
-          style={{ color: comment.message.user_color }}
-          span
-        >
-          {comment.commenter.display_name}
-        </Text>
+        {
+          onUserNameClick ? (
+            <UnstyledButton onClick={onUserNameClick} type="button">
+              {usernameComponent}
+            </UnstyledButton>
+          ) : (
+            usernameComponent
+          )
+        }
         <Text className={classes.message} span>
-          :{" "}
+          {isAction ? " " : ": "}
         </Text>
         {/* message */}
-        {comment.ganymede_formatted_message && comment.ganymede_formatted_message.map(
-          (fragment: GanymedeFormattedMessageFragment, index: number) => {
-            switch (fragment.type) {
-              case GanymedeFormattedMessageType.Text:
-                return (
-                  <Text key={`${comment._id}-text-${index}`} className={classes.message} span>
-                    {fragment.text}
-                  </Text>
-                )
-              case GanymedeFormattedMessageType.Emote: {
-                const emoteName = fragment.emote?.name || fragment.text;
-                // some emotes include a height, use the provided height or hardcode a standard height if not included
-                if ((fragment.emote?.height ?? 0) !== 0 && (fragment.emote?.width ?? 0) !== 0) {
-                  return (
-                    <Tooltip key={`${comment._id}-emote-${index}`} label={emoteName} position="top">
-                      <img
-                        src={fragment.url}
-                        className={classes.emoteImage}
-                        height={fragment.emote?.height}
-                        alt={emoteName}
-                      />
-                    </Tooltip>
-                  );
-                } else {
-                  return (
-                    <Tooltip key={`${comment._id}-emote-${index}`} label={emoteName} position="top">
-                      <img
-                        src={fragment.url}
-                        className={classes.emoteImage}
-                        alt={emoteName}
-                        height={28}
-                      />
-                    </Tooltip>
-                  );
-                }
-              }
-
-            }
-          }
+        {isEvent && eventSystemMessage ? (
+          <span className={classes.eventBody}>
+            <Text className={classes.eventSystemMessage} span>
+              {eventSystemMessage}
+            </Text>
+            {eventUserMessage && (
+              <Text className={classes.eventUserMessage} span>
+                {eventUserMessage}
+              </Text>
+            )}
+          </span>
+        ) : (
+          renderFormattedMessage()
         )}
       </span>
 
