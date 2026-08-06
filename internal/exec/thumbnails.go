@@ -1,6 +1,7 @@
 package exec
 
 import (
+	"context"
 	"fmt"
 	"image"
 	"image/draw"
@@ -9,13 +10,13 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strconv"
-	"strings"
 
 	"github.com/rs/zerolog/log"
 )
 
 type GenerateThumbnailsInput struct {
 	Video        string
+	Duration     int
 	Interval     int
 	ThumbnailDir string
 	Width        int
@@ -32,23 +33,22 @@ type CreateSpritesInput struct {
 }
 
 // GenerateThumbnails extracts frames from the video at specified intervals.
-func GenerateThumbnails(config GenerateThumbnailsInput) error {
-	// Get video duration using ffprobe
-	cmd := exec.Command("ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", config.Video)
-	output, err := cmd.Output()
-	if err != nil {
-		return fmt.Errorf("failed to get video duration: %w", err)
+func GenerateThumbnails(ctx context.Context, config GenerateThumbnailsInput) error {
+	if config.Duration <= 0 {
+		return fmt.Errorf("video duration must be greater than zero")
 	}
-
-	// Parse duration and calculate frames
-	duration, err := strconv.ParseFloat(strings.TrimSpace(string(output)), 64)
-	if err != nil {
-		return fmt.Errorf("failed to parse video duration: %w", err)
+	if config.Interval <= 0 {
+		return fmt.Errorf("thumbnail interval must be greater than zero")
 	}
 
 	// Extract frames at intervals
 	format := fmt.Sprintf("frame%%0%dd.jpg", 8)
-	for t := 0; t < int(duration); t += config.Interval {
+	generatedThumbnails := 0
+	consecutiveMissingThumbnails := 0
+	for t := 0; t < config.Duration; t += config.Interval {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
 		outputPath := filepath.Join(config.ThumbnailDir, fmt.Sprintf(format, t))
 
 		// Try fast method: seek to time and select I-frame
@@ -66,11 +66,13 @@ func GenerateThumbnails(config GenerateThumbnailsInput) error {
 			outputPath,
 		}
 
-		cmd := exec.Command("ffmpeg", argsSelect...)
+		cmd := exec.CommandContext(ctx, "ffmpeg", argsSelect...)
 		out, err := cmd.CombinedOutput()
 		if err == nil {
 			// verify file exists and is non-zero
 			if fi, statErr := os.Stat(outputPath); statErr == nil && fi.Size() > 0 {
+				generatedThumbnails++
+				consecutiveMissingThumbnails = 0
 				continue // success
 			}
 		}
@@ -89,20 +91,36 @@ func GenerateThumbnails(config GenerateThumbnailsInput) error {
 			outputPath,
 		}
 
-		cmd2 := exec.Command("ffmpeg", argsFallback...)
+		cmd2 := exec.CommandContext(ctx, "ffmpeg", argsFallback...)
 		out2, err2 := cmd2.CombinedOutput()
 		if err2 != nil {
 			// both attempts failed
 			log.Printf("thumbnail failed for t=%d: firstErr=%v firstOut=%s\nsecondErr=%v secondOut=%s",
 				t, err, string(out), err2, string(out2))
+			consecutiveMissingThumbnails++
+			if generatedThumbnails > 0 && consecutiveMissingThumbnails >= 2 {
+				log.Warn().Int("time", t).Msg("stopping sprite extraction after consecutive out-of-range thumbnails")
+				break
+			}
 			continue
 		}
 
 		// verify file exists and is non-zero
 		if fi, statErr := os.Stat(outputPath); statErr != nil || fi.Size() == 0 {
 			log.Printf("thumbnail generated but file missing or zero-sized for t=%d (path=%s)", t, outputPath)
+			consecutiveMissingThumbnails++
+			if generatedThumbnails > 0 && consecutiveMissingThumbnails >= 2 {
+				log.Warn().Int("time", t).Msg("stopping sprite extraction after consecutive out-of-range thumbnails")
+				break
+			}
+			continue
 		}
+		generatedThumbnails++
+		consecutiveMissingThumbnails = 0
 
+	}
+	if generatedThumbnails == 0 {
+		return fmt.Errorf("no thumbnails could be extracted from %s", config.Video)
 	}
 	return nil
 }
