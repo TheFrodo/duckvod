@@ -40,6 +40,8 @@ export interface Comment {
   // format complex object into simpler ones for rendering
   ganymede_formatted_badges: GanymedeFormattedBadge[];
   ganymede_formatted_message: GanymedeFormattedMessageFragment[];
+  ganymede_chat_message_kind?: GanymedeChatMessageKind;
+  ganymede_event_label?: string;
 }
 
 export interface GanymedeFormattedBadge {
@@ -59,6 +61,15 @@ export interface GanymedeFormattedMessageFragment {
 export enum GanymedeFormattedMessageType {
   Text = "text",
   Emote = "emote",
+}
+
+export enum GanymedeChatMessageKind {
+  Normal = "normal",
+  Action = "action",
+  Bits = "bits",
+  FirstMessage = "first_message",
+  Highlighted = "highlighted",
+  UserNotice = "user_notice",
 }
 
 export interface GanymedeFormattedEmote {
@@ -83,18 +94,20 @@ export interface Commenter {
 
 export interface Message {
   body: string;
-  bits_spent: string;
+  bits_spent: number;
   fragments: Fragment[];
   is_action: boolean;
+  is_first_message?: boolean;
   user_badges: UserBadge[];
   user_color: string;
   user_notice_params: UserNoticeParams;
   Emoticons: EmoticonElement[];
+  reply?: Reply;
 }
 
 export interface Fragment {
   text: string;
-  emoticon: FragmentEmoticon;
+  emoticon: FragmentEmoticon | null;
 }
 
 export interface FragmentEmoticon {
@@ -108,7 +121,17 @@ export interface UserBadge {
 }
 
 export interface UserNoticeParams {
-  msg_id: string;
+  msg_id?: string | null;
+  system_msg?: string;
+  params?: Record<string, string>;
+}
+
+export interface Reply {
+  parent_msg_id: string;
+  parent_user_id: string;
+  parent_user_login: string;
+  parent_display_name: string;
+  parent_msg_body: string;
 }
 
 export interface EmoticonElement {
@@ -188,6 +211,45 @@ const useGetSeekChatForVideo = (
   });
 };
 
+const getChatForChatterInVideo = async (
+  videoId: string,
+  chatterId: string,
+  chatterLogin: string,
+  isLiveArchive: boolean,
+): Promise<Array<Comment>> => {
+  if (isLiveArchive) {
+    // Converted live archives do not reliably expose commenter._id, so fetch
+    // the archive once and identify the chatter by their Twitch login instead.
+    const comments = await getChatForVideo(videoId, 0, Number.MAX_SAFE_INTEGER);
+    const normalizedLogin = chatterLogin.toLowerCase();
+
+    return comments.filter((comment) =>
+      (chatterId !== "" && comment.commenter._id === chatterId)
+      || comment.commenter.name?.toLowerCase() === normalizedLogin
+      || comment.commenter.display_name?.toLowerCase() === normalizedLogin
+    );
+  }
+
+  const response = await useAxios.get(`/api/v1/vod/${videoId}/chat/chatter/${chatterId}`);
+  return response.data.data;
+};
+
+
+const useGetChatForChatterInVideo = (
+  videoId: string,
+  chatterId: string,
+  chatterLogin: string,
+  isLiveArchive: boolean,
+) => {
+  return useQuery<Array<Comment>>({
+    queryKey: ["video", "chat", "chatter", videoId, chatterId, chatterLogin, isLiveArchive],
+    queryFn: () => getChatForChatterInVideo(videoId, chatterId, chatterLogin, isLiveArchive),
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+  });
+};
+
 const getBadgesForVideo = async (videoId: string): Promise<Array<Badge>> => {
   const response = await useAxios.get(`/api/v1/vod/${videoId}/chat/badges`);
   return response.data.data;
@@ -212,4 +274,5 @@ export {
   useGetSeekChatForVideo,
   getChatForVideo,
   getSeekChatForVideo,
+  useGetChatForChatterInVideo,
 };

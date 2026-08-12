@@ -4,28 +4,101 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	stdErrors "errors"
 	"fmt"
+	"io"
 	"os"
 	osExec "os/exec"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"syscall"
 	"time"
 
-	"github.com/grafov/m3u8"
 	"github.com/rs/zerolog/log"
 	"github.com/zibbp/ganymede/ent"
 	"github.com/zibbp/ganymede/internal/config"
 	"github.com/zibbp/ganymede/internal/errors"
 	"github.com/zibbp/ganymede/internal/exec/ytdlp"
+	"github.com/zibbp/ganymede/internal/hls"
 	"github.com/zibbp/ganymede/internal/platform"
 	"github.com/zibbp/ganymede/internal/utils"
 )
 
 const (
-	sigintTimeout = 300 * time.Second
+	archiveShutdownTimeout = 300 * time.Second
+
+	archiveProcessForwarder = `
+forward_term() {
+	trap - TERM
+	kill -s TERM -- "-$$"
+}
+
+trap 'forward_term' TERM
+
+"$@" &
+child_pid=$!
+wait "$child_pid"
+exit $?
+`
 )
+
+func appendFFmpegLiveOutputStreamArgs(args []string, audioOnly bool) []string {
+	streamMap := "0"
+	if audioOnly {
+		streamMap = "0:a"
+	}
+
+	return append(args,
+		"-map", streamMap,
+		"-dn",
+		"-ignore_unknown",
+		"-c", "copy",
+	)
+}
+
+func appendYtDlpVideoConfigArgs(args []string, configArgs string) []string {
+	skipValue := false
+	for _, arg := range strings.Split(configArgs, ",") {
+		trimmedArg := strings.TrimSpace(arg)
+		if skipValue {
+			skipValue = false
+			continue
+		}
+		if trimmedArg == "-o" || trimmedArg == "--output" || trimmedArg == "-P" || trimmedArg == "--paths" {
+			skipValue = true
+			continue
+		}
+		if strings.HasPrefix(trimmedArg, "--output=") || strings.HasPrefix(trimmedArg, "--paths=") ||
+			(len(trimmedArg) > 2 && (strings.HasPrefix(trimmedArg, "-o") || strings.HasPrefix(trimmedArg, "-P"))) {
+			continue
+		}
+		if trimmedArg != "" {
+			args = append(args, trimmedArg)
+		}
+	}
+	return args
+}
+
+func twitchVideoDownloadArgs(quality, url, outputPath, configArgs string) []string {
+	args := []string{
+		"-f", quality,
+		url,
+		"-o", outputPath,
+		"--merge-output-format", "mp4", "--no-part",
+		"--no-warnings", "--progress", "--newline", "--no-check-certificate",
+		// Twitch VOD playlists can change their fMP4 initialization segment after a
+		// discontinuity. The native HLS downloader rejects a second EXT-X-MAP, while
+		// ffmpeg handles the new initialization section correctly.
+		"--hls-prefer-ffmpeg",
+	}
+
+	// User arguments are intentionally last so an explicit downloader preference
+	// in the configuration can override the default. Output options are excluded
+	// so the application-owned temporary path remains authoritative.
+	return appendYtDlpVideoConfigArgs(args, configArgs)
+}
 
 // DownloadTwitchVideo downloads a Twitch video.
 func DownloadTwitchVideo(ctx context.Context, video ent.Vod) error {
@@ -84,25 +157,12 @@ func DownloadTwitchVideo(ctx context.Context, video ent.Vod) error {
 	tmpVideoDownloadExt := filepath.Ext(video.TmpVideoDownloadPath)
 	tmpVideoDownloadPathNoExt := strings.TrimSuffix(video.TmpVideoDownloadPath, tmpVideoDownloadExt)
 
-	// Get user arguments from config
-	configYtDlpArgs := config.Get().Parameters.YtDlpVideo
-	configYtDlpArgsArr := strings.Split(configYtDlpArgs, ",")
-
-	var cmdArgs []string
-	cmdArgs = append(cmdArgs,
-		"-f", qualityString,
+	cmdArgs := twitchVideoDownloadArgs(
+		qualityString,
 		url,
-		"-o", fmt.Sprintf("%s.%%(ext)s", tmpVideoDownloadPathNoExt),
-		"--merge-output-format", "mp4", "--no-part",
-		"--no-warnings", "--progress", "--newline", "--no-check-certificate",
+		fmt.Sprintf("%s.%%(ext)s", tmpVideoDownloadPathNoExt),
+		config.Get().Parameters.YtDlpVideo,
 	)
-
-	// Sanitize config args before appending
-	for _, arg := range configYtDlpArgsArr {
-		if strings.TrimSpace(arg) != "" {
-			cmdArgs = append(cmdArgs, arg)
-		}
-	}
 
 	// Create yt-dlp command
 	cmd, cookieFile, err := ytdlpSvc.CreateCommand(ctx, cmdArgs, true)
@@ -125,24 +185,19 @@ func DownloadTwitchVideo(ctx context.Context, video ent.Vod) error {
 	cmd.Stderr = file
 	cmd.Stdout = file
 
-	cmd.SysProcAttr = &syscall.SysProcAttr{
-		Setpgid: true, // Set the process group ID to allow killing child processes
-	}
-	if err := cmd.Start(); err != nil {
+	cmd.SysProcAttr = vodArchiveProcessAttributes()
+	done, err := startArchiveCommand(cmd)
+	if err != nil {
 		return fmt.Errorf("error starting yt-dlp: %w", err)
 	}
-
-	done := make(chan error)
-	go func() {
-		done <- cmd.Wait()
-	}()
 
 	// Wait for the command to finish or context to be cancelled
 	select {
 	case <-ctx.Done():
-		// Context was cancelled, kill the process
-		if err := cmd.Process.Kill(); err != nil {
-			return fmt.Errorf("failed to kill yt-dlp process: %v", err)
+		// Context was cancelled, kill the forwarder process group, including
+		// yt-dlp and any ffmpeg process it spawned.
+		if err := syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL); err != nil && !stdErrors.Is(err, syscall.ESRCH) {
+			return fmt.Errorf("failed to kill yt-dlp process group: %v", err)
 		}
 		<-done // Wait for copying to finish
 		return ctx.Err()
@@ -179,7 +234,7 @@ func DownloadTwitchLiveVideo(ctx context.Context, video ent.Vod, channel ent.Cha
 	log.Debug().Str("video_id", video.ID.String()).Msgf("logging ffmpeg output to %s", logFilePath)
 
 	proxyFound := false // Whether a proxy was found
-	var masterPlaylist *m3u8.MasterPlaylist
+	var masterPlaylist *hls.Multivariant
 
 	twitchURL := utils.CreateTwitchURL(video.ExtID, video.Type, channel.Name)
 
@@ -241,6 +296,8 @@ func DownloadTwitchLiveVideo(ctx context.Context, video ent.Vod, channel ent.Cha
 		closestQuality = "audio_only"
 	}
 
+	audioOnly := closestQuality == "audio_only"
+
 	// Base ffmpeg args (shared between transport-stream and hls live archiving)
 	ffmpegArgs := []string{
 		"-y",
@@ -249,11 +306,8 @@ func DownloadTwitchLiveVideo(ctx context.Context, video ent.Vod, channel ent.Cha
 		"-rw_timeout", "30000000", // 30 second timeout for ffmpeg to connect/read before it gives up and retries
 		"-timeout", "30000000", // 30 second timeout for ffmpeg to connect/read before it gives up and retries
 		"-i", qualitiesURI[closestQuality],
-		"-map", "0",
-		"-dn",
-		"-ignore_unknown",
-		"-c", "copy",
 	}
+	ffmpegArgs = appendFFmpegLiveOutputStreamArgs(ffmpegArgs, audioOnly)
 
 	// Decide archive format.
 	archivingAsMP4 := (video.VideoHlsPath == "")
@@ -281,13 +335,14 @@ func DownloadTwitchLiveVideo(ctx context.Context, video ent.Vod, channel ent.Cha
 			segmentPattern := fmt.Sprintf("%s/%s_segment%%06d.ts", video.TmpVideoHlsPath, video.ExtID)
 
 			ffmpegArgs = append(ffmpegArgs,
+				appendFFmpegLiveOutputStreamArgs(nil, audioOnly)...,
+			)
+			ffmpegArgs = append(ffmpegArgs,
 				"-start_number", "0",
 				"-hls_time", "2",
 				"-hls_list_size", "0",
 				"-hls_playlist_type", "event",
 				"-hls_flags", "append_list+independent_segments",
-				"-c:v", "copy",
-				"-c:a", "copy",
 				"-hls_segment_filename", segmentPattern,
 				"-f", "hls",
 				playlistPath,
@@ -303,6 +358,9 @@ func DownloadTwitchLiveVideo(ctx context.Context, video ent.Vod, channel ent.Cha
 		segmentPattern := fmt.Sprintf("%s/%s_segment%%06d.ts", video.TmpVideoHlsPath, video.ExtID)
 
 		ffmpegArgs = append(ffmpegArgs,
+			appendFFmpegLiveOutputStreamArgs(nil, audioOnly)...,
+		)
+		ffmpegArgs = append(ffmpegArgs,
 			"-start_number", "0",
 			"-hls_time", "10",
 			"-hls_list_size", "0",
@@ -316,7 +374,7 @@ func DownloadTwitchLiveVideo(ctx context.Context, video ent.Vod, channel ent.Cha
 
 	// Run ffmpeg
 	cmd := osExec.Command("ffmpeg", ffmpegArgs...)
-	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	cmd.SysProcAttr = liveArchiveProcessAttributes()
 
 	log.Debug().Str("channel", channel.Name).Str("cmd", strings.Join(cmd.Args, " ")).Msgf("running ffmpeg")
 
@@ -326,32 +384,28 @@ func DownloadTwitchLiveVideo(ctx context.Context, video ent.Vod, channel ent.Cha
 	cmd.Stderr = file
 	cmd.Stdout = file
 
-	if err := cmd.Start(); err != nil {
+	done, err := startArchiveCommand(cmd)
+	if err != nil {
 		return fmt.Errorf("error starting ffmpeg: %w", err)
 	}
 
-	done := make(chan error)
-	go func() {
-		done <- cmd.Wait()
-	}()
-
 	// Wait for the command to finish or for ctx cancellation.
 	// When ctx is cancelled, allow ffmpeg to handle a graceful shutdown first:
-	// send SIGINT to the process group, wait up to sigintTimeout, then SIGKILL
+	// send SIGTERM to the process group, wait up to archiveShutdownTimeout, then SIGKILL.
 	select {
 	case <-ctx.Done():
 		if cmd.Process != nil {
-			err = syscall.Kill(-cmd.Process.Pid, syscall.SIGINT)
+			err = syscall.Kill(-cmd.Process.Pid, syscall.SIGTERM)
 			if err != nil {
-				log.Error().Err(err).Msg("failed to send SIGINT to ffmpeg process")
+				log.Error().Err(err).Msg("failed to send SIGTERM to ffmpeg process")
 			}
 		}
 		select {
 		case <-done:
-			// exited after SIGINT
-		case <-time.After(sigintTimeout):
+			// exited after SIGTERM
+		case <-time.After(archiveShutdownTimeout):
 			if cmd.Process != nil {
-				log.Warn().Msg("ffmpeg process did not exit after SIGINT, sending SIGKILL")
+				log.Warn().Msg("ffmpeg process did not exit after SIGTERM, sending SIGKILL")
 				err = syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
 				if err != nil {
 					log.Error().Err(err).Msg("failed to send SIGKILL to ffmpeg process")
@@ -372,6 +426,60 @@ func DownloadTwitchLiveVideo(ctx context.Context, video ent.Vod, channel ent.Cha
 	}
 
 	return nil
+}
+
+// startArchiveCommand launches a forwarding shim as the worker's direct child.
+// If Pdeathsig is delivered to the shim, it forwards the signal to its process
+// group so descendants such as yt-dlp's ffmpeg process terminate as well.
+//
+// The goroutine that creates the shim remains locked to its OS thread until
+// Wait returns because Linux ties Pdeathsig to the creating thread.
+func startArchiveCommand(cmd *osExec.Cmd) (<-chan error, error) {
+	targetPath := cmd.Path
+	targetArgs := append([]string(nil), cmd.Args[1:]...)
+	shellPath, err := osExec.LookPath("sh")
+	if err != nil {
+		return nil, fmt.Errorf("find archive process forwarder shell: %w", err)
+	}
+	cmd.Path = shellPath
+	cmd.Args = append(
+		[]string{shellPath, "-c", archiveProcessForwarder, "archive-process-forwarder", targetPath},
+		targetArgs...,
+	)
+
+	started := make(chan error, 1)
+	done := make(chan error, 1)
+
+	go func() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+
+		if err := cmd.Start(); err != nil {
+			started <- err
+			return
+		}
+		started <- nil
+		done <- cmd.Wait()
+	}()
+
+	if err := <-started; err != nil {
+		return nil, err
+	}
+	return done, nil
+}
+
+func liveArchiveProcessAttributes() *syscall.SysProcAttr {
+	return &syscall.SysProcAttr{
+		Setpgid:   true,
+		Pdeathsig: syscall.SIGTERM,
+	}
+}
+
+func vodArchiveProcessAttributes() *syscall.SysProcAttr {
+	return &syscall.SysProcAttr{
+		Setpgid:   true,
+		Pdeathsig: syscall.SIGTERM,
+	}
 }
 
 func ConvertVideoToHLS(ctx context.Context, video ent.Vod) error {
@@ -431,11 +539,6 @@ func ConvertVideoToHLS(ctx context.Context, video ent.Vod) error {
 func PostProcessVideo(ctx context.Context, video ent.Vod) error {
 	env := config.GetEnvConfig()
 	configFfmpegArgs := config.Get().Parameters.VideoConvert
-	arr := strings.Fields(configFfmpegArgs)
-	ffmpegArgs := []string{"-y", "-hide_banner", "-fflags", "+genpts", "-i", video.TmpVideoDownloadPath, "-map", "0", "-dn", "-ignore_unknown", "-c", "copy", "-f", "mp4", "-bsf:a", "aac_adtstoasc", "-movflags", "+faststart"}
-
-	ffmpegArgs = append(ffmpegArgs, arr...)
-	ffmpegArgs = append(ffmpegArgs, video.TmpVideoConvertPath)
 
 	// open log file
 	logFilePath := fmt.Sprintf("%s/%s-video-convert.log", env.LogsDir, video.ID.String())
@@ -450,40 +553,90 @@ func PostProcessVideo(ctx context.Context, video ent.Vod) error {
 	}()
 	log.Debug().Str("video_id", video.ID.String()).Msgf("logging ffmpeg output to %s", logFilePath)
 
-	log.Debug().Str("video_id", video.ID.String()).Str("cmd", strings.Join(ffmpegArgs, " ")).Msgf("running ffmpeg")
+	return postProcessVideo(ctx, video, configFfmpegArgs, file)
+}
 
-	cmd := osExec.CommandContext(ctx, "ffmpeg", ffmpegArgs...)
-
-	cmd.Stderr = file
-	cmd.Stdout = file
-
-	if err := cmd.Start(); err != nil {
-		return fmt.Errorf("error starting ffmpeg: %w", err)
+func postProcessVideo(ctx context.Context, video ent.Vod, configFfmpegArgs string, output io.Writer) error {
+	if err := runPostProcessVideoFFmpeg(ctx, video, postProcessVideoFFmpegArgs(video, configFfmpegArgs), output); err != nil {
+		return err
 	}
 
-	done := make(chan error)
-	go func() {
-		done <- cmd.Wait()
-	}()
+	duration, err := ProbeMediaDuration(ctx, video.TmpVideoConvertPath)
+	if err != nil {
+		return fmt.Errorf("probe finalized video duration: %w", err)
+	}
+	if !duration.HasTimestampAnomaly() {
+		return nil
+	}
 
-	// Wait for the command to finish or context to be cancelled
-	select {
-	case <-ctx.Done():
-		// Context was cancelled, kill the process
-		if err := cmd.Process.Kill(); err != nil {
-			return fmt.Errorf("failed to kill ffmpeg process: %v", err)
-		}
-		<-done // Wait for copying to finish
-		return ctx.Err()
-	case err := <-done:
-		// Command finished normally
-		if err != nil {
-			log.Error().Err(err).Msg("error running ffmpeg")
-			return fmt.Errorf("error running ffmpeg: %w", err)
-		}
+	log.Warn().
+		Str("video_id", video.ID.String()).
+		Float64("format_duration", duration.FormatDuration).
+		Float64("stream_duration", duration.LongestStreamDuration).
+		Msg("detected anomalous container timestamps; normalizing each stream")
+
+	if err := runPostProcessVideoFFmpeg(ctx, video, normalizedPostProcessVideoFFmpegArgs(video, configFfmpegArgs), output); err != nil {
+		return fmt.Errorf("normalize finalized video timestamps: %w", err)
+	}
+
+	duration, err = ProbeMediaDuration(ctx, video.TmpVideoConvertPath)
+	if err != nil {
+		return fmt.Errorf("probe timestamp-normalized video duration: %w", err)
+	}
+	if duration.HasTimestampAnomaly() {
+		return fmt.Errorf(
+			"timestamp normalization did not repair container duration: format=%f stream=%f",
+			duration.FormatDuration,
+			duration.LongestStreamDuration,
+		)
 	}
 
 	return nil
+}
+
+func runPostProcessVideoFFmpeg(ctx context.Context, video ent.Vod, ffmpegArgs []string, output io.Writer) error {
+	log.Debug().Str("video_id", video.ID.String()).Str("cmd", strings.Join(ffmpegArgs, " ")).Msg("running ffmpeg")
+
+	cmd := osExec.CommandContext(ctx, "ffmpeg", ffmpegArgs...)
+	cmd.Stderr = output
+	cmd.Stdout = output
+	if err := cmd.Run(); err != nil {
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
+		log.Error().Err(err).Msg("error running ffmpeg")
+		return fmt.Errorf("error running ffmpeg: %w", err)
+	}
+	return nil
+}
+
+func postProcessVideoFFmpegArgs(video ent.Vod, configFfmpegArgs string) []string {
+	return buildPostProcessVideoFFmpegArgs(video, configFfmpegArgs, false)
+}
+
+func normalizedPostProcessVideoFFmpegArgs(video ent.Vod, configFfmpegArgs string) []string {
+	return buildPostProcessVideoFFmpegArgs(video, configFfmpegArgs, true)
+}
+
+func buildPostProcessVideoFFmpegArgs(video ent.Vod, configFfmpegArgs string, normalizeTimestamps bool) []string {
+	arr := strings.Fields(configFfmpegArgs)
+	ffmpegArgs := []string{"-y", "-hide_banner", "-fflags", "+genpts", "-i", video.TmpVideoDownloadPath, "-map", "0", "-dn", "-ignore_unknown", "-c", "copy", "-f", "mp4"}
+	if !normalizeTimestamps {
+		ffmpegArgs = append(ffmpegArgs, "-bsf:a", "aac_adtstoasc")
+	}
+	ffmpegArgs = append(ffmpegArgs, "-movflags", "+faststart")
+
+	ffmpegArgs = append(ffmpegArgs, "-metadata", "title="+video.Title)
+	ffmpegArgs = append(ffmpegArgs, arr...)
+	if normalizeTimestamps {
+		// Apply one bitstream-filter instance per output stream. STARTDTS is
+		// therefore local to each stream, repairing large audio/video start
+		// offsets without decoding or re-encoding the media.
+		ffmpegArgs = append(ffmpegArgs, "-bsf", "setts=ts=TS-STARTDTS")
+	}
+	ffmpegArgs = append(ffmpegArgs, video.TmpVideoConvertPath)
+
+	return ffmpegArgs
 }
 
 func DownloadTwitchChat(ctx context.Context, video ent.Vod) error {

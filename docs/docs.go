@@ -3866,6 +3866,60 @@ const docTemplate = `{
                 }
             }
         },
+        "/vod/{id}/chat/chatter/{chatter_id}": {
+            "get": {
+                "description": "Get vod chat comments from a specific chatter",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vods"
+                ],
+                "summary": "Get vod chat comments from a specific chatter",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Vod ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Chatter ID",
+                        "name": "chatter_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/chat.Comment"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/vod/{id}/chat/emotes": {
             "get": {
                 "description": "Get vod chat emotes",
@@ -4440,6 +4494,12 @@ const docTemplate = `{
                 "is_action": {
                     "type": "boolean"
                 },
+                "is_first_message": {
+                    "type": "boolean"
+                },
+                "reply": {
+                    "$ref": "#/definitions/chat.Reply"
+                },
                 "user_badges": {
                     "type": "array",
                     "items": {
@@ -4451,6 +4511,26 @@ const docTemplate = `{
                 },
                 "user_notice_params": {
                     "$ref": "#/definitions/chat.UserNoticeParams"
+                }
+            }
+        },
+        "chat.Reply": {
+            "type": "object",
+            "properties": {
+                "parent_display_name": {
+                    "type": "string"
+                },
+                "parent_msg_body": {
+                    "type": "string"
+                },
+                "parent_msg_id": {
+                    "type": "string"
+                },
+                "parent_user_id": {
+                    "type": "string"
+                },
+                "parent_user_login": {
+                    "type": "string"
                 }
             }
         },
@@ -4466,7 +4546,16 @@ const docTemplate = `{
         "chat.UserNoticeParams": {
             "type": "object",
             "properties": {
-                "msg_id": {}
+                "msg_id": {},
+                "params": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "system_msg": {
+                    "type": "string"
+                }
             }
         },
         "config.Config": {
@@ -4479,6 +4568,10 @@ const docTemplate = `{
                 "archive": {
                     "type": "object",
                     "properties": {
+                        "generate_nfo_files": {
+                            "description": "Generate Kodi-compatible NFO sidecars for archived videos.",
+                            "type": "boolean"
+                        },
                         "generate_sprite_thumbnails": {
                             "description": "Generate sprite thumbnails for scrubbing.",
                             "type": "boolean"
@@ -4861,7 +4954,7 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "resolution": {
-                    "description": "Resolution holds the value of the \"resolution\" field.",
+                    "description": "Live stream archive quality.",
                     "type": "string"
                 },
                 "strict_categories_live": {
@@ -4879,6 +4972,10 @@ const docTemplate = `{
                 "video_age": {
                     "description": "Restrict fetching videos to a certain age.",
                     "type": "integer"
+                },
+                "vod_resolution": {
+                    "description": "Video and clip archive quality.",
+                    "type": "string"
                 },
                 "watch_clips": {
                     "description": "Whether to download clips on a schedule.",
@@ -5846,6 +5943,19 @@ const docTemplate = `{
                     "description": "restrict fetching videos to a certain age",
                     "type": "integer"
                 },
+                "vod_resolution": {
+                    "type": "string",
+                    "enum": [
+                        "best",
+                        "1440p",
+                        "1080p",
+                        "720p",
+                        "480p",
+                        "360p",
+                        "160p",
+                        "audio"
+                    ]
+                },
                 "watch_clips": {
                     "type": "boolean"
                 },
@@ -6393,7 +6503,8 @@ const docTemplate = `{
                         "generate_sprite_thumbnails",
                         "update_video_storage_usage",
                         "process_playlist_video_rules",
-                        "update_platform_channels"
+                        "update_platform_channels",
+                        "generate_nfo_files"
                     ]
                 }
             }
@@ -6739,6 +6850,19 @@ const docTemplate = `{
                 "video_age": {
                     "description": "restrict fetching videos to a certain age",
                     "type": "integer"
+                },
+                "vod_resolution": {
+                    "type": "string",
+                    "enum": [
+                        "best",
+                        "1440p",
+                        "1080p",
+                        "720p",
+                        "480p",
+                        "360p",
+                        "160p",
+                        "audio"
+                    ]
                 },
                 "watch_clips": {
                     "type": "boolean"

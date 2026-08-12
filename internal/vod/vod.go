@@ -92,7 +92,11 @@ type MutedSegment struct {
 }
 
 func (s *Service) CreateVod(vodDto Vod, cUUID uuid.UUID) (*ent.Vod, error) {
-	v, err := s.Store.Client.Vod.Create().SetID(vodDto.ID).SetChannelID(cUUID).SetExtID(vodDto.ExtID).SetExtStreamID(vodDto.ExtStreamID).SetPlatform(vodDto.Platform).SetType(vodDto.Type).SetTitle(vodDto.Title).SetDuration(vodDto.Duration).SetViews(vodDto.Views).SetResolution(vodDto.Resolution).SetProcessing(vodDto.Processing).SetThumbnailPath(vodDto.ThumbnailPath).SetWebThumbnailPath(vodDto.WebThumbnailPath).SetVideoPath(vodDto.VideoPath).SetChatPath(vodDto.ChatPath).SetChatVideoPath(vodDto.ChatVideoPath).SetInfoPath(vodDto.InfoPath).SetCaptionPath(vodDto.CaptionPath).SetStreamedAt(vodDto.StreamedAt).SetFolderName(vodDto.FolderName).SetFileName(vodDto.FileName).SetLocked(vodDto.Locked).SetTmpVideoDownloadPath(vodDto.TmpVideoDownloadPath).SetTmpVideoConvertPath(vodDto.TmpVideoConvertPath).SetTmpChatDownloadPath(vodDto.TmpChatDownloadPath).SetTmpLiveChatDownloadPath(vodDto.TmpLiveChatDownloadPath).SetTmpLiveChatConvertPath(vodDto.TmpLiveChatConvertPath).SetTmpChatRenderPath(vodDto.TmpChatRenderPath).SetLiveChatPath(vodDto.LiveChatPath).SetLiveChatConvertPath(vodDto.LiveChatConvertPath).SetVideoHlsPath(vodDto.VideoHLSPath).SetTmpVideoHlsPath(vodDto.TmpVideoHLSPath).SetClipVodOffset(vodDto.ClipVodOffset).SetClipExtVodID(vodDto.ClipExtVodID).Save(context.Background())
+	return s.CreateVodWithClient(context.Background(), s.Store.Client, vodDto, cUUID)
+}
+
+func (s *Service) CreateVodWithClient(ctx context.Context, client *ent.Client, vodDto Vod, cUUID uuid.UUID) (*ent.Vod, error) {
+	v, err := client.Vod.Create().SetID(vodDto.ID).SetChannelID(cUUID).SetExtID(vodDto.ExtID).SetExtStreamID(vodDto.ExtStreamID).SetPlatform(vodDto.Platform).SetType(vodDto.Type).SetTitle(vodDto.Title).SetDuration(vodDto.Duration).SetViews(vodDto.Views).SetResolution(vodDto.Resolution).SetProcessing(vodDto.Processing).SetThumbnailPath(vodDto.ThumbnailPath).SetWebThumbnailPath(vodDto.WebThumbnailPath).SetVideoPath(vodDto.VideoPath).SetChatPath(vodDto.ChatPath).SetChatVideoPath(vodDto.ChatVideoPath).SetInfoPath(vodDto.InfoPath).SetCaptionPath(vodDto.CaptionPath).SetStreamedAt(vodDto.StreamedAt).SetFolderName(vodDto.FolderName).SetFileName(vodDto.FileName).SetLocked(vodDto.Locked).SetTmpVideoDownloadPath(vodDto.TmpVideoDownloadPath).SetTmpVideoConvertPath(vodDto.TmpVideoConvertPath).SetTmpChatDownloadPath(vodDto.TmpChatDownloadPath).SetTmpLiveChatDownloadPath(vodDto.TmpLiveChatDownloadPath).SetTmpLiveChatConvertPath(vodDto.TmpLiveChatConvertPath).SetTmpChatRenderPath(vodDto.TmpChatRenderPath).SetLiveChatPath(vodDto.LiveChatPath).SetLiveChatConvertPath(vodDto.LiveChatConvertPath).SetVideoHlsPath(vodDto.VideoHLSPath).SetTmpVideoHlsPath(vodDto.TmpVideoHLSPath).SetClipVodOffset(vodDto.ClipVodOffset).SetClipExtVodID(vodDto.ClipExtVodID).Save(ctx)
 	if err != nil {
 		log.Debug().Err(err).Msg("error creating vod")
 		if _, ok := err.(*ent.ConstraintError); ok {
@@ -442,6 +446,56 @@ func (s *Service) GetVodChatComments(c echo.Context, vodID uuid.UUID, start floa
 	comments = nil
 
 	defer runtime.GC()
+
+	return &filteredComments, nil
+}
+
+func (s *Service) GetVodChatCommentsFromChatter(c echo.Context, vodID uuid.UUID, chatterID string) (*[]chat.Comment, error) {
+	v, err := s.Store.Client.Vod.Query().Where(vod.ID(vodID)).Only(c.Request().Context())
+	if err != nil {
+		log.Debug().Err(err).Msg("error getting vod chat")
+		return nil, fmt.Errorf("error getting vod chat: %v", err)
+	}
+
+	cachedUserComments, exists := cache.Cache().Get(v.ID.String() + "#c:" + chatterID)
+
+	if exists {
+		comments := cachedUserComments.([]chat.Comment)
+		return &comments, nil
+	}
+
+	var comments []chat.Comment
+	cacheData, exists := cache.Cache().Get(v.ID.String())
+	if !exists {
+		err = loadChatIntoCache(v)
+		if err != nil {
+			log.Debug().Err(err).Msg("error loading chat into cache")
+			return nil, fmt.Errorf("error loading chat into cache: %v", err)
+		}
+		cacheData, _ = cache.Cache().Get(v.ID.String())
+	}
+	comments = cacheData.([]chat.Comment)
+
+	// Reset the cache
+	err = cache.Cache().Set(v.ID.String(), comments, 10*time.Minute)
+	if err != nil {
+		log.Debug().Err(err).Msg("error setting cache")
+		return nil, fmt.Errorf("error setting cache: %v", err)
+	}
+
+	var filteredComments []chat.Comment
+
+	for _, comment := range comments {
+		if comment.Commenter.ID == chatterID {
+			filteredComments = append(filteredComments, comment)
+		}
+	}
+
+	err = cache.Cache().Set(v.ID.String()+"#c:"+chatterID, filteredComments, 10*time.Minute)
+	if err != nil {
+		log.Debug().Err(err).Msg("error setting cache")
+		return nil, fmt.Errorf("error setting cache: %v", err)
+	}
 
 	return &filteredComments, nil
 }
