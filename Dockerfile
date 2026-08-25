@@ -4,7 +4,7 @@ ARG YT_DLP_VERSION="2026.07.04"
 #
 # API Build
 #
-FROM golang:1.26-bookworm AS build-api
+FROM golang:1.27-bookworm AS build-api
 ARG GIT_SHA
 ARG GIT_TAG
 ENV GIT_SHA=$GIT_SHA
@@ -105,7 +105,7 @@ RUN \
 #
 # Tests stage. Includes dependencies required for tests
 #
-FROM golang:1.26-bookworm AS tests
+FROM golang:1.27-bookworm AS tests
 
 RUN apt-get update && apt-get install -y --no-install-recommends python3 python3-pip ffmpeg make git
 
