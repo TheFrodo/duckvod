@@ -336,6 +336,13 @@ func (s *YtDlpService) CreateQualityOption(quality string) string {
 		return fmt.Sprintf("best[height=%s]/best", quality)
 	}
 
+	// Twitch clips may use format IDs like "1080-0" and "720-1". The
+	// leading number is the height and the suffix identifies the variant.
+	reTwitchClip := regexp.MustCompile(`^(\d+)-\d+$`)
+	if matches := reTwitchClip.FindStringSubmatch(quality); len(matches) > 1 {
+		return fmt.Sprintf("best[height=%s]/best", matches[1])
+	}
+
 	// Fallback: match up to resolution
 	return fmt.Sprintf("best[height<=?%s]/best", quality)
 }
