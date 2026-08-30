@@ -87,6 +87,47 @@ func TestFileIsQuiet(t *testing.T) {
 	require.True(t, quiet)
 }
 
+func TestFileIsStalled(t *testing.T) {
+	t.Parallel()
+
+	now := time.Date(2026, time.July, 22, 20, 0, 0, 0, time.UTC)
+	path := filepath.Join(t.TempDir(), "capture.ts")
+	require.NoError(t, os.WriteFile(path, []byte("partial media"), 0o600))
+
+	require.NoError(t, os.Chtimes(path, now.Add(-liveArchiveMediaStallTimeout+time.Second), now.Add(-liveArchiveMediaStallTimeout+time.Second)))
+	stalled, err := fileIsStalled(path, nil, now)
+	require.NoError(t, err)
+	require.False(t, stalled)
+
+	require.NoError(t, os.Chtimes(path, now.Add(-liveArchiveMediaStallTimeout), now.Add(-liveArchiveMediaStallTimeout)))
+	stalled, err = fileIsStalled(path, nil, now)
+	require.NoError(t, err)
+	require.True(t, stalled)
+
+	stalled, err = fileIsStalled(filepath.Join(t.TempDir(), "missing.ts"), nil, now)
+	require.NoError(t, err)
+	require.False(t, stalled)
+
+	startedAt := now.Add(-liveArchiveMediaStallTimeout)
+	stalled, err = fileIsStalled(filepath.Join(t.TempDir(), "missing.ts"), &startedAt, now)
+	require.NoError(t, err)
+	require.True(t, stalled)
+}
+
+func TestArchiveJobNeedsWatchdog(t *testing.T) {
+	t.Parallel()
+
+	now := time.Date(2026, time.July, 22, 20, 0, 0, 0, time.UTC)
+	fresh := now.Add(-time.Minute)
+	stale := now.Add(-archiveHeartbeatTimeout - time.Second)
+	liveVideo := string(utils.TaskDownloadLiveVideo)
+
+	require.False(t, archiveJobNeedsWatchdog(liveVideo, fresh, false, now))
+	require.True(t, archiveJobNeedsWatchdog(liveVideo, fresh, true, now))
+	require.True(t, archiveJobNeedsWatchdog(string(utils.TaskDownloadVideo), stale, false, now))
+	require.False(t, archiveJobNeedsWatchdog(string(utils.TaskDownloadVideo), time.Time{}, false, now))
+}
+
 func TestLiveArchiveDownloadNeedsRecovery(t *testing.T) {
 	t.Parallel()
 
