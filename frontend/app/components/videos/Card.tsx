@@ -11,7 +11,7 @@ import { durationToTime, escapeURL, prettyNumber } from "@/app/util/util";
 import { PlaybackStatus, useFetchPlaybackForVideo } from "@/app/hooks/usePlayback";
 import { useAxiosPrivate } from "@/app/hooks/useAxios";
 import useAuthStore from "@/app/store/useAuthStore";
-import { IconCircleCheck, IconLock } from "@tabler/icons-react";
+import { IconCalendar, IconCircleCheck, IconEye, IconLock } from "@tabler/icons-react";
 import VideoMenu from "./Menu";
 import { UserRole } from "@/app/hooks/useAuthentication";
 import { useTranslations } from "next-intl";
@@ -195,7 +195,8 @@ const VideoCard = ({
             video.streamed_at
           ).toLocaleString()}`}
         >
-          <Text size="sm">
+          <Text size="sm" className={classes.metaItem}>
+            <IconCalendar size={15} stroke={1.8} className={classes.metaIcon} />
             {dayjs(video.streamed_at).format("DD.MM.YYYY")}
           </Text>
         </Tooltip>
@@ -208,7 +209,8 @@ const VideoCard = ({
                 label={`${video.views ?? 0} ${t('sourceViewsText')}
                ${video.local_views ?? 0} ${t('localViewsText')}`}
               >
-                <Text size="sm">
+                <Text size="sm" className={classes.metaItem}>
+                  <IconEye size={15} stroke={1.8} className={classes.metaIcon} />
                   {prettyNumber(video.views ?? 0)} {t('viewsText')}
                 </Text>
               </Tooltip>

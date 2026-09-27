@@ -99,6 +99,18 @@
   }
 }
 
+.metaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: rem(5px);
+  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-1));
+}
+
+.metaIcon {
+  flex-shrink: 0;
+  color: light-dark(var(--mantine-color-duck-6), var(--mantine-color-duck-3));
+}
+
 .typeBadge {
   font-family: var(--mantine-font-family-monospace);
 }
