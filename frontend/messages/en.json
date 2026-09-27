@@ -1,7 +1,8 @@
 {
   "HomePage": {
     "continueWatching": "Continue Watching",
-    "recentlyArchived": "Recently Archived"
+    "recentlyArchived": "Recently Archived",
+    "channels": "Channels"
   },
   "VideosPage": {
     "pageTitle": "Videos",

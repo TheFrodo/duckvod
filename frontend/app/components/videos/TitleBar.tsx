@@ -52,7 +52,7 @@ const VideoTitleBar = ({ video }: Params) => {
               </Group>
             )}
 
-            {video.views && (
+            {!!video.views && (
               <Group mr={15}>
                 <Tooltip
                   label={`${video.views.toLocaleString()} ${t('sourceViewsTooltip')}`}
@@ -66,7 +66,7 @@ const VideoTitleBar = ({ video }: Params) => {
               </Group>
             )}
 
-            {video.local_views && (
+            {!!video.local_views && (
               <Group mr={15}>
                 <Tooltip
                   label={`${video.local_views.toLocaleString()} ${t('localViewsTooltip')}`}

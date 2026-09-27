@@ -205,11 +205,11 @@ const VideoCard = ({
             {showViewCount && (
               <Tooltip
                 multiline
-                label={`${video.views} ${t('sourceViewsText')}
+                label={`${video.views ?? 0} ${t('sourceViewsText')}
                ${video.local_views ?? 0} ${t('localViewsText')}`}
               >
                 <Text size="sm">
-                  {prettyNumber(video.views)} {t('viewsText')}
+                  {prettyNumber(video.views ?? 0)} {t('viewsText')}
                 </Text>
               </Tooltip>
             )}
