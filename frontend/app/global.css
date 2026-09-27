@@ -1,5 +1,0 @@
-/* disable link underlines by default */
-a {
-  color: inherit;
-  text-decoration: none;
-}
