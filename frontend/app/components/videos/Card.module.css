@@ -1,0 +1,122 @@
+.card {
+  position: relative;
+  background-color: transparent;
+  overflow: visible;
+  transition: transform 160ms ease;
+
+  &:hover {
+    transform: translateY(-3px);
+  }
+}
+
+.processingOverlay {
+  position: absolute;
+  top: 35%;
+  transform: translateY(-50%);
+  z-index: 50;
+  margin-left: auto;
+  margin-right: auto;
+  left: 0;
+  right: 0;
+  width: 100%;
+  text-align: center;
+  opacity: 2;
+}
+
+.videoImageWrapper {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: var(--mantine-radius-lg);
+  background-color: light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-7));
+  box-shadow: 0 0 0 rem(1px) light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.05));
+  transition: box-shadow 160ms ease;
+
+  .card:hover & {
+    box-shadow:
+      0 0 0 rem(2px) var(--mantine-color-duck-5),
+      0 rem(10px) rem(28px) rgba(113, 82, 245, 0.28);
+  }
+}
+
+.selectionCheckboxInline {
+  display: flex;
+  align-items: center;
+  margin-left: var(--mantine-spacing-xs);
+  opacity: 0.75;
+}
+
+.selectionCheckboxInline:hover {
+  opacity: 1;
+}
+
+.videoImage {
+  pointer-events: none;
+  cursor: default;
+  transition: transform 300ms ease;
+
+  .card:hover & {
+    transform: scale(1.04);
+  }
+}
+
+.durationBadge {
+  position: absolute;
+  right: rem(8px);
+  bottom: rem(8px);
+  z-index: 3;
+  pointer-events: none;
+  padding: rem(2px) rem(7px);
+  border-radius: var(--mantine-radius-sm);
+  font-family: var(--mantine-font-family-monospace);
+  font-size: rem(12px);
+  font-weight: 700;
+  color: var(--mantine-color-white);
+  background-color: rgba(10, 9, 18, 0.78);
+  backdrop-filter: blur(4px);
+  transition: bottom 200ms ease;
+
+  .videoImageWrapper:hover & {
+    bottom: rem(18px);
+  }
+}
+
+.watchedIcon {
+  position: absolute;
+  top: var(--mantine-spacing-sm);
+  right: rem(12px);
+}
+
+.title {
+  margin-top: var(--mantine-spacing-xs);
+  margin-bottom: rem(2px);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  transition: color 120ms ease;
+
+  .card:hover & {
+    color: light-dark(var(--mantine-color-duck-7), var(--mantine-color-duck-3));
+  }
+}
+
+.typeBadge {
+  font-family: var(--mantine-font-family-monospace);
+}
+
+.progressBar {
+  margin-top: rem(-5px);
+  margin-left: rem(8px);
+  margin-right: rem(8px);
+  position: relative;
+  z-index: 4;
+  border-radius: rem(999px);
+}
+
+.channelFooter {
+  margin-top: rem(5px);
+}
+
+.vodMenu {
+  margin-left: auto;
+  display: flex;
+}

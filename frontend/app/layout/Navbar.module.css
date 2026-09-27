@@ -1,0 +1,108 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: rem(64px);
+  padding-left: rem(24px);
+  padding-right: rem(24px);
+  background-color: light-dark(rgba(255, 255, 255, 0.8), rgba(13, 12, 21, 0.78));
+  backdrop-filter: saturate(160%) blur(14px);
+  -webkit-backdrop-filter: saturate(160%) blur(14px);
+  border-bottom: rem(1px) solid
+    light-dark(var(--mantine-color-gray-2), rgba(255, 255, 255, 0.06));
+}
+
+.inner {
+  height: rem(64px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: rem(8px);
+}
+
+.brandText {
+  font-family: var(--mantine-font-family-headings);
+  font-size: rem(22px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: light-dark(var(--mantine-color-dark-8), var(--mantine-color-white));
+}
+
+.brandAccent {
+  background: var(--duck-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.link {
+  display: block;
+  line-height: 1;
+  height: 100%;
+  padding: rem(9px) rem(14px);
+  border-radius: rem(999px);
+  text-decoration: none;
+  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-0));
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 600;
+  transition: background-color 120ms ease, color 120ms ease;
+
+  @mixin hover {
+    color: light-dark(var(--mantine-color-dark-8), var(--mantine-color-white));
+    background-color: light-dark(
+      var(--mantine-color-gray-1),
+      var(--mantine-color-dark-6)
+    );
+  }
+
+  &[data-active] {
+    color: var(--mantine-color-white);
+    background-color: var(--mantine-color-duck-6);
+  }
+}
+
+.searchInput {
+  background-color: light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-7));
+  border-color: transparent;
+
+  &:focus {
+    border-color: var(--mantine-color-duck-5);
+  }
+}
+
+.linkLabel {
+  margin-right: rem(5px);
+}
+
+.collapseToggle {
+  width: 100%;
+}
+
+.collapseContent {
+  padding-left: var(--mantine-spacing-md);
+}
+
+.dark {
+  @mixin dark {
+    display: none;
+  }
+
+  @mixin light {
+    display: block;
+  }
+}
+
+.light {
+  @mixin light {
+    display: none;
+  }
+
+  @mixin dark {
+    display: block;
+  }
+}

@@ -1,0 +1,12 @@
+.link {
+  color: var(--mantine-color-blue-6);
+}
+.proxyList {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.proxyInput {
+  width: 100%;
+}

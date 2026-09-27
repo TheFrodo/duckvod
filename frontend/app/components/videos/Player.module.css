@@ -1,0 +1,47 @@
+.mediaPlayer {
+  height: calc(100vh - rem(56px) - 60px);
+
+  video {
+    height: calc(100vh - rem(56px) - 60px);
+  }
+
+  @media (max-width: em(1000px)) {
+    height: 100%;
+    video {
+      height: 100%;
+    }
+  }
+}
+
+.mediaPlayerTheaterMode {
+  height: 100vh;
+
+  video {
+    height: 100vh;
+  }
+
+  width: 100%;
+}
+
+.mediaPlayerPoster {
+  object-fit: contain;
+}
+
+.absoluteTimeOverlay {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  color: white;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.absoluteTimeText {
+  font-family: var(--mantine-font-family-monospace);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
