@@ -38,19 +38,19 @@ export default function Home() {
 
       <Box mt="xl">
         <Container size={"7xl"}>
-          <Title order={2} className="duck-section-title">{t('recentlyArchived')}</Title>
+          <Title order={2} className="duck-section-title">{t('channels')}</Title>
         </Container>
         <Container mt="md" size={"7xl"}>
-          <RecentlyArchived count={8} />
+          <LandingChannels />
         </Container>
       </Box>
 
       <Box mt="xl" pb="xl">
         <Container size={"7xl"}>
-          <Title order={2} className="duck-section-title">{t('channels')}</Title>
+          <Title order={2} className="duck-section-title">{t('recentlyArchived')}</Title>
         </Container>
         <Container mt="md" size={"7xl"}>
-          <LandingChannels />
+          <RecentlyArchived count={8} />
         </Container>
       </Box>
 
