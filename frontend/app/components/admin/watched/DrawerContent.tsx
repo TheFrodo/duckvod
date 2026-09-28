@@ -11,7 +11,6 @@ import { getTwitchCategories } from "@/app/hooks/useCategory";
 import { useDisclosure } from "@mantine/hooks";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { metadata } from "@/app/layout";
 import { VideoQuality } from "@/app/hooks/useArchive";
 
 type Props = {
