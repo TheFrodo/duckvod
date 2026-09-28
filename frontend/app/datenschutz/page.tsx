@@ -23,7 +23,8 @@ export default function DatenschutzPage() {
             Datenschutz-Grundverordnung (DSGVO) ist:
           </p>
           <p>
-            {OPERATOR.name}<br />
+            {OPERATOR.company}<br />
+            Inhaber: {OPERATOR.owner}<br />
             {OPERATOR.street}<br />
             {OPERATOR.city}<br />
             {OPERATOR.country}<br />

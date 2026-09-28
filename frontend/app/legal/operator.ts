@@ -1,15 +1,15 @@
 // Betreiberangaben für Impressum und Datenschutzerklärung.
-// TODO: Platzhalter vor dem Livegang durch die echten Angaben ersetzen.
-// Eine Postfachadresse reicht für das Impressum nicht aus, es muss eine ladungsfähige Anschrift sein.
+// TODO: E-Mail und Telefonnummer vor dem Livegang eintragen.
 export const OPERATOR = {
-  name: "[Vorname Nachname]",
-  street: "[Straße Hausnummer]",
-  city: "[PLZ Ort]",
+  company: "QuackHost IT-Solutions",
+  owner: "Alexander Berger",
+  street: "Stöckmannstraße 43",
+  city: "46045 Oberhausen",
   country: "Deutschland",
-  email: "[kontakt@example.de]",
-  phone: "[Telefonnummer]",
+  email: "abuse@duckvod.de",
+  phone: "015568681733",
   // Verantwortlich für journalistisch-redaktionelle Inhalte nach § 18 Abs. 2 MStV
-  responsible: "[Vorname Nachname, Anschrift wie oben]",
+  responsible: "Alexander Berger, Stöckmannstraße 43, 46045 Oberhausen",
 };
 
 export const LEGAL_LAST_UPDATED = "28.09.2026";

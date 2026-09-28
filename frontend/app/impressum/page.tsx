@@ -17,9 +17,14 @@ export default function ImpressumPage() {
         <Title order={1} className="duck-section-title">Impressum</Title>
 
         <div className={classes.content}>
+          <p>
+            DuckVOD wird betrieben von {OPERATOR.company}.
+          </p>
+
           <h2>Angaben gemäß § 5 DDG</h2>
           <p>
-            {OPERATOR.name}<br />
+            {OPERATOR.company}<br />
+            Inhaber: {OPERATOR.owner}<br />
             {OPERATOR.street}<br />
             {OPERATOR.city}<br />
             {OPERATOR.country}
