@@ -6,16 +6,86 @@ import 'mantine-datatable/styles.layer.css';
 import '@/app/global.css'
 
 import { ColorSchemeScript } from '@mantine/core';
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import { getSiteUrl } from './util/siteUrl';
 import Providers from './providers';
 import { EnvScript, PublicEnvScript } from 'next-runtime-env';
 import { getLocale } from 'next-intl/server';
 import { NextIntlClientProvider } from 'next-intl';
 import ForceLogin from './components/authentication/ForceLogin';
 
-export const metadata: Metadata = {
-  title: "DuckVOD",
-  description: "Verpasste Quaks? Kein Problem! Auf DuckVOD findest du alle Live-Streams & Videos aus dem Ententeich, fein archiviert und jederzeit bereit zum Nachwatscheln.",
+const SITE_NAME = "DuckVOD";
+const SITE_DESCRIPTION = "DuckVOD archiviert Twitch-VODs und Livestreams der DuckSquad Community – mit gerendertem Echtzeit-Chat, der sich auch außerhalb von DuckVOD ansehen lässt. Verpasste Quaks? Hier kannst du alles nachwatscheln.";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const siteUrl = await getSiteUrl();
+  const locale = await getLocale();
+
+  return {
+    metadataBase: new URL(siteUrl),
+    title: {
+      default: `${SITE_NAME} – Twitch-VOD- und Livestream-Archiv mit Chat`,
+      template: `%s | ${SITE_NAME}`,
+    },
+    description: SITE_DESCRIPTION,
+    applicationName: SITE_NAME,
+    keywords: [
+      "DuckVOD",
+      "DuckSquad",
+      "Twitch VOD",
+      "Twitch Archiv",
+      "Livestream Archiv",
+      "Stream verpasst",
+      "Twitch Chat Replay",
+      "VOD mit Chat",
+    ],
+    authors: [{ name: "DuckSquad Community" }],
+    creator: "DuckSquad Community",
+    publisher: "DuckSquad Community",
+    category: "entertainment",
+    openGraph: {
+      type: "website",
+      siteName: SITE_NAME,
+      title: `${SITE_NAME} – Twitch-VOD- und Livestream-Archiv mit Chat`,
+      description: SITE_DESCRIPTION,
+      locale: locale === "de" ? "de_DE" : locale === "uk" ? "uk_UA" : "en_US",
+      images: [{ url: "/android-chrome-512x512.png", width: 512, height: 512, alt: SITE_NAME }],
+    },
+    twitter: {
+      card: "summary",
+      title: `${SITE_NAME} – Twitch-VOD- und Livestream-Archiv mit Chat`,
+      description: SITE_DESCRIPTION,
+      images: ["/android-chrome-512x512.png"],
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: { index: true, follow: true, "max-image-preview": "large" },
+    },
+    icons: {
+      icon: [
+        { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+        { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      ],
+      apple: "/apple-touch-icon.png",
+    },
+  };
+}
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#0d0c15" },
+    { media: "(prefers-color-scheme: light)", color: "#f6f5fb" },
+  ],
+};
+
+// structured data so search engines understand what the site is
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: SITE_NAME,
+  description: SITE_DESCRIPTION,
+  publisher: { "@type": "Organization", name: "DuckSquad Community" },
 };
 
 export default async function RootLayout({
@@ -43,6 +113,10 @@ export default async function RootLayout({
           }}
         />
         <ColorSchemeScript defaultColorScheme='dark' />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
       </head>
       <body>
 

@@ -6,6 +6,7 @@ import type * as React from 'react'
 import { Container, createTheme, MantineProvider, rem } from '@mantine/core'
 import { Notifications } from '@mantine/notifications'
 import { Navbar } from './layout/Navbar';
+import { Footer } from './layout/Footer';
 import useSettingsStore from './store/useSettingsStore';
 import { useEffect } from 'react';
 import useAuthStore from './store/useAuthStore'
@@ -136,6 +137,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       <QueryClientProvider client={queryClient}>
         {!videoTheaterMode && <Navbar />}
         {children}
+        {!videoTheaterMode && <Footer />}
         <ReactQueryDevtools />
       </QueryClientProvider>
     </MantineProvider>

@@ -11,7 +11,8 @@ export default function ForceLogin({ children }: { children: React.ReactNode }) 
   const pathname = usePathname();
   const { isLoggedIn, isLoading } = useAuthStore();
 
-  const isAuthPage = pathname === "/login" || pathname === "/register";
+  // legal pages must stay reachable without login
+  const isAuthPage = pathname === "/login" || pathname === "/register" || pathname === "/impressum" || pathname === "/datenschutz";
 
   const isForceLoginEnabled = env('NEXT_PUBLIC_REQUIRE_LOGIN')
 

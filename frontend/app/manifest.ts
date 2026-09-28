@@ -4,11 +4,12 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "DuckVOD",
     short_name: "DuckVOD",
-    description: "Eine Plattform zum Archivieren von Live-Streams und Videos",
+    description: "Archiv für Twitch-VODs und Livestreams der DuckSquad Community – mit gerendertem Echtzeit-Chat.",
+    lang: "de",
     start_url: "/",
     display: "standalone",
-    background_color: "#141417",
-    theme_color: "#000000",
+    background_color: "#0d0c15",
+    theme_color: "#7152f5",
     icons: [
       {
         src: "/android-chrome-192x192.png",

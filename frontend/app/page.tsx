@@ -12,7 +12,7 @@ export default function Home() {
   const { isLoggedIn } = useAuthStore();
 
   useEffect(() => {
-    document.title = "DuckVOD";
+    document.title = "DuckVOD – Twitch-VOD- und Livestream-Archiv mit Chat";
   }, []);
 
   const t = useTranslations("HomePage");
