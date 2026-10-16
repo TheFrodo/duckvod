@@ -72,6 +72,9 @@ a.hosted:hover {
 }
 
 .onLight {
+  /* the dark logo variant has a taller aspect ratio */
+  height: rem(28px);
+
   @mixin dark {
     display: none;
   }

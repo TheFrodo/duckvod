@@ -7,7 +7,7 @@ import classes from './Footer.module.css';
 // The logo is served locally from frontend/public/images (no third-party request for visitors).
 const HOSTING_PARTNER = {
   name: "Nexosystems",
-  url: "https://nexo.systems",
+  url: "https://nexo.systems/a/thefrodode",
   // light logo is shown on the dark color scheme, dark logo on the light color scheme
   logoLight: "/images/nexosystems-light.svg",
   logoDark: "/images/nexosystems-dark.svg",
@@ -38,7 +38,10 @@ export function Footer() {
           onError={() => setDarkLogoFailed(true)}
         />
       )}
-      <span className={classes.hostedName}>{HOSTING_PARTNER.name}</span>
+      {/* the logos already contain the name, only show it as text when no logo is available */}
+      {lightLogoFailed && darkLogoFailed && (
+        <span className={classes.hostedName}>{HOSTING_PARTNER.name}</span>
+      )}
     </>
   );
 
@@ -51,7 +54,7 @@ export function Footer() {
         </div>
 
         {HOSTING_PARTNER.url ? (
-          <a href={HOSTING_PARTNER.url} target="_blank" rel="noopener" className={classes.hosted}>
+          <a href={HOSTING_PARTNER.url} target="_blank" rel="noopener sponsored" className={classes.hosted}>
             {hostedBy}
           </a>
         ) : (
