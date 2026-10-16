@@ -39,6 +39,50 @@
   color: light-dark(var(--mantine-color-gray-6), var(--mantine-color-dark-2));
 }
 
+.hosted {
+  display: inline-flex;
+  align-items: center;
+  gap: rem(8px);
+  padding: rem(6px) rem(12px);
+  border-radius: rem(999px);
+  border: rem(1px) solid light-dark(var(--mantine-color-gray-2), rgba(255, 255, 255, 0.08));
+  background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
+  transition: border-color 120ms ease;
+}
+
+a.hosted:hover {
+  border-color: var(--mantine-color-duck-5);
+}
+
+.hostedLabel {
+  font-size: var(--mantine-font-size-xs);
+  color: light-dark(var(--mantine-color-gray-6), var(--mantine-color-dark-2));
+}
+
+.hostedLogo {
+  height: rem(20px);
+  width: auto;
+  display: block;
+}
+
+.onDark {
+  @mixin light {
+    display: none;
+  }
+}
+
+.onLight {
+  @mixin dark {
+    display: none;
+  }
+}
+
+.hostedName {
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 700;
+  color: light-dark(var(--mantine-color-dark-8), var(--mantine-color-white));
+}
+
 .links {
   display: flex;
   gap: var(--mantine-spacing-lg);
