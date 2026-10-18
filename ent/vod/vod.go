@@ -37,8 +37,8 @@ const (
 	FieldViews = "views"
 	// FieldResolution holds the string denoting the resolution field in the database.
 	FieldResolution = "resolution"
-	// FieldProcessing holds the string denoting the processing field in the database.
-	FieldProcessing = "processing"
+	// FieldStatus holds the string denoting the status field in the database.
+	FieldStatus = "status"
 	// FieldThumbnailPath holds the string denoting the thumbnail_path field in the database.
 	FieldThumbnailPath = "thumbnail_path"
 	// FieldWebThumbnailPath holds the string denoting the web_thumbnail_path field in the database.
@@ -79,6 +79,8 @@ const (
 	FieldTmpVideoHlsPath = "tmp_video_hls_path"
 	// FieldLocked holds the string denoting the locked field in the database.
 	FieldLocked = "locked"
+	// FieldNotes holds the string denoting the notes field in the database.
+	FieldNotes = "notes"
 	// FieldLocalViews holds the string denoting the local_views field in the database.
 	FieldLocalViews = "local_views"
 	// FieldSpriteThumbnailsEnabled holds the string denoting the sprite_thumbnails_enabled field in the database.
@@ -99,6 +101,8 @@ const (
 	FieldStorageSizeBytes = "storage_size_bytes"
 	// FieldStreamedAt holds the string denoting the streamed_at field in the database.
 	FieldStreamedAt = "streamed_at"
+	// FieldVideoStartAt holds the string denoting the video_start_at field in the database.
+	FieldVideoStartAt = "video_start_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
@@ -172,7 +176,7 @@ var Columns = []string{
 	FieldClipVodOffset,
 	FieldViews,
 	FieldResolution,
-	FieldProcessing,
+	FieldStatus,
 	FieldThumbnailPath,
 	FieldWebThumbnailPath,
 	FieldVideoPath,
@@ -193,6 +197,7 @@ var Columns = []string{
 	FieldTmpChatRenderPath,
 	FieldTmpVideoHlsPath,
 	FieldLocked,
+	FieldNotes,
 	FieldLocalViews,
 	FieldSpriteThumbnailsEnabled,
 	FieldSpriteThumbnailsImages,
@@ -203,6 +208,7 @@ var Columns = []string{
 	FieldSpriteThumbnailsColumns,
 	FieldStorageSizeBytes,
 	FieldStreamedAt,
+	FieldVideoStartAt,
 	FieldUpdatedAt,
 	FieldCreatedAt,
 }
@@ -239,8 +245,6 @@ var (
 	DefaultDuration int
 	// DefaultViews holds the default value on creation for the "views" field.
 	DefaultViews int
-	// DefaultProcessing holds the default value on creation for the "processing" field.
-	DefaultProcessing bool
 	// DefaultLocked holds the default value on creation for the "locked" field.
 	DefaultLocked bool
 	// DefaultLocalViews holds the default value on creation for the "local_views" field.
@@ -282,6 +286,18 @@ func TypeValidator(_type utils.VodType) error {
 		return nil
 	default:
 		return fmt.Errorf("vod: invalid enum value for type field: %q", _type)
+	}
+}
+
+const DefaultStatus utils.ArchiveStatus = "completed"
+
+// StatusValidator is a validator for the "status" field enum values. It is called by the builders before save.
+func StatusValidator(s utils.ArchiveStatus) error {
+	switch s {
+	case "queued", "running", "finalizing", "completed", "failed":
+		return nil
+	default:
+		return fmt.Errorf("vod: invalid enum value for status field: %q", s)
 	}
 }
 
@@ -343,9 +359,9 @@ func ByResolution(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldResolution, opts...).ToFunc()
 }
 
-// ByProcessing orders the results by the processing field.
-func ByProcessing(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldProcessing, opts...).ToFunc()
+// ByStatus orders the results by the status field.
+func ByStatus(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldStatus, opts...).ToFunc()
 }
 
 // ByThumbnailPath orders the results by the thumbnail_path field.
@@ -448,6 +464,11 @@ func ByLocked(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldLocked, opts...).ToFunc()
 }
 
+// ByNotes orders the results by the notes field.
+func ByNotes(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNotes, opts...).ToFunc()
+}
+
 // ByLocalViews orders the results by the local_views field.
 func ByLocalViews(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldLocalViews, opts...).ToFunc()
@@ -491,6 +512,11 @@ func ByStorageSizeBytes(opts ...sql.OrderTermOption) OrderOption {
 // ByStreamedAt orders the results by the streamed_at field.
 func ByStreamedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStreamedAt, opts...).ToFunc()
+}
+
+// ByVideoStartAt orders the results by the video_start_at field.
+func ByVideoStartAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldVideoStartAt, opts...).ToFunc()
 }
 
 // ByUpdatedAt orders the results by the updated_at field.

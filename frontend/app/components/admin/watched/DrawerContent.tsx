@@ -35,6 +35,11 @@ const qualityOptions: SelectOption[] = Object.entries(VideoQuality).map(([key, v
   value: value
 }));
 
+// Twitch clips do not publish audio-only or 160p renditions.
+const clipQualityOptions: SelectOption[] = qualityOptions.filter(
+  (option) => option.value !== VideoQuality.audio && option.value !== VideoQuality.quality160p
+);
+
 const AdminWatchedChannelDrawerContent = ({ watchedChannel, mode, handleClose }: Props) => {
   const t = useTranslations('AdminWatchedComponents')
   const axiosPrivate = useAxiosPrivate()
@@ -60,6 +65,7 @@ const AdminWatchedChannelDrawerContent = ({ watchedChannel, mode, handleClose }:
       download_uploads: watchedChannel?.download_uploads ?? true,
       resolution: watchedChannel?.resolution || "best",
       vod_resolution: watchedChannel?.vod_resolution || watchedChannel?.resolution || "best",
+      clip_resolution: watchedChannel?.clip_resolution || watchedChannel?.vod_resolution || watchedChannel?.resolution || "best",
       archive_chat: watchedChannel?.archive_chat ?? true,
       channel_id: watchedChannel?.edges.channel.id || "",
       render_chat: watchedChannel?.render_chat ?? true,
@@ -133,6 +139,7 @@ const AdminWatchedChannelDrawerContent = ({ watchedChannel, mode, handleClose }:
           download_uploads: formValues.download_uploads,
           resolution: formValues.resolution,
           vod_resolution: formValues.vod_resolution,
+          clip_resolution: formValues.clip_resolution,
           archive_chat: formValues.archive_chat,
           render_chat: formValues.render_chat,
           download_sub_only: formValues.download_sub_only,
@@ -179,6 +186,7 @@ const AdminWatchedChannelDrawerContent = ({ watchedChannel, mode, handleClose }:
           download_uploads: formValues.download_uploads,
           resolution: formValues.resolution,
           vod_resolution: formValues.vod_resolution,
+          clip_resolution: formValues.clip_resolution,
           archive_chat: formValues.archive_chat,
           render_chat: formValues.render_chat,
           download_sub_only: formValues.download_sub_only,
@@ -391,6 +399,16 @@ const AdminWatchedChannelDrawerContent = ({ watchedChannel, mode, handleClose }:
             label={t('watchClipsLabel')}
             key={form.key('watch_clips')}
             {...form.getInputProps('watch_clips', { type: "checkbox" })}
+          />
+
+          <Select
+            mt={5}
+            label={t('clipResolutionLabel')}
+            description={t('clipResolutionDescription')}
+            data={clipQualityOptions}
+            key={form.key('clip_resolution')}
+            {...form.getInputProps('clip_resolution')}
+            searchable
           />
 
 

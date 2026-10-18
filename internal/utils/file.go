@@ -249,37 +249,45 @@ func moveFile(ctx context.Context, source, dest string, rename func(string, stri
 	if err != nil {
 		return fmt.Errorf("failed to create destination file: %w", err)
 	}
+	// The source is the only copy once it is removed, so the destination is kept
+	// only after it is known to be on disk.
+	moved := false
 	defer func() {
-		if destFile == nil {
+		if destFile != nil {
+			if err := destFile.Close(); err != nil {
+				log.Debug().Err(err).Msg("error closing destination file")
+			}
+		}
+		if moved {
 			return
 		}
-		if err := destFile.Close(); err != nil {
-			log.Debug().Err(err).Msg("error closing destination file")
+		if err := os.Remove(dest); err != nil && !os.IsNotExist(err) {
+			log.Error().Err(err).Msg("error removing incomplete destination file")
 		}
 	}()
 
 	// Use io.Copy with context to respect cancellation
-	_, copyErr := io.Copy(destFile, &contextReader{ctx: ctx, r: srcFile})
-	if copyErr != nil {
-		if closeErr := destFile.Close(); closeErr != nil {
-			log.Error().Err(closeErr).Msg("error closing destination file after copy")
-		}
-		destFile = nil
-		if removeErr := os.Remove(dest); removeErr != nil {
-			log.Error().Err(removeErr).Msg("error removing destination file after copy failure")
-		}
-		return fmt.Errorf("failed to copy file: %w", copyErr)
+	if _, err := io.Copy(destFile, &contextReader{ctx: ctx, r: srcFile}); err != nil {
+		return fmt.Errorf("failed to copy file: %w", err)
 	}
 
-	// Close files before attempting to remove the source
+	// Close the source before attempting to remove it
 	if closeErr := srcFile.Close(); closeErr != nil {
 		log.Debug().Err(closeErr).Msg("error closing source file after copy")
 	}
 	srcFile = nil
-	if closeErr := destFile.Close(); closeErr != nil {
-		log.Error().Err(closeErr).Msg("error closing destination file after copy")
+
+	// On a network filesystem a write error surfaces at sync or close rather than
+	// during the copy, so both are returned rather than logged.
+	if err := destFile.Sync(); err != nil {
+		return fmt.Errorf("failed to flush destination file: %w", err)
 	}
+	closeErr := destFile.Close()
 	destFile = nil
+	if closeErr != nil {
+		return fmt.Errorf("failed to close destination file: %w", closeErr)
+	}
+	moved = true
 
 	// Remove the source file
 	if err := os.Remove(source); err != nil {
@@ -513,4 +521,16 @@ func GetFreeSpaceOfDirectory(path string) (int64, error) {
 		return 0, fmt.Errorf("error getting free space of directory: %v", err)
 	}
 	return int64(stat.Bavail) * int64(stat.Bsize), nil
+}
+
+// GetTotalSpaceOfDirectory returns the total capacity in bytes of the filesystem
+// containing the given path. This must be used instead of deriving capacity from
+// free space plus application-tracked bytes: the volume may hold files outside of
+// Ganymede's control (especially on shared NFS/SMB mounts).
+func GetTotalSpaceOfDirectory(path string) (int64, error) {
+	var stat unix.Statfs_t
+	if err := unix.Statfs(path, &stat); err != nil {
+		return 0, fmt.Errorf("error getting total space of directory: %v", err)
+	}
+	return int64(stat.Blocks) * int64(stat.Bsize), nil
 }

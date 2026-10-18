@@ -42,8 +42,8 @@ type Vod struct {
 	Views int `json:"views,omitempty"`
 	// Resolution holds the value of the "resolution" field.
 	Resolution string `json:"resolution,omitempty"`
-	// Whether the VOD is currently processing.
-	Processing bool `json:"processing,omitempty"`
+	// Archive processing lifecycle, independent of capture completeness.
+	Status utils.ArchiveStatus `json:"status,omitempty"`
 	// ThumbnailPath holds the value of the "thumbnail_path" field.
 	ThumbnailPath string `json:"thumbnail_path,omitempty"`
 	// WebThumbnailPath holds the value of the "web_thumbnail_path" field.
@@ -84,6 +84,8 @@ type Vod struct {
 	TmpVideoHlsPath string `json:"tmp_video_hls_path,omitempty"`
 	// Locked holds the value of the "locked" field.
 	Locked bool `json:"locked,omitempty"`
+	// User notes about why the VOD was kept.
+	Notes string `json:"notes,omitempty"`
 	// LocalViews holds the value of the "local_views" field.
 	LocalViews int `json:"local_views,omitempty"`
 	// SpriteThumbnailsEnabled holds the value of the "sprite_thumbnails_enabled" field.
@@ -104,6 +106,8 @@ type Vod struct {
 	StorageSizeBytes int64 `json:"storage_size_bytes,omitempty"`
 	// The time the VOD was streamed.
 	StreamedAt time.Time `json:"streamed_at,omitempty"`
+	// The wall-clock time that video second 0 corresponds to; for live archives it accounts for capture latency and may equal the chat capture start when unresolvable.
+	VideoStartAt *time.Time `json:"video_start_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -199,13 +203,13 @@ func (*Vod) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case vod.FieldSpriteThumbnailsImages:
 			values[i] = new([]byte)
-		case vod.FieldProcessing, vod.FieldLocked, vod.FieldSpriteThumbnailsEnabled:
+		case vod.FieldLocked, vod.FieldSpriteThumbnailsEnabled:
 			values[i] = new(sql.NullBool)
 		case vod.FieldDuration, vod.FieldClipVodOffset, vod.FieldViews, vod.FieldLocalViews, vod.FieldSpriteThumbnailsInterval, vod.FieldSpriteThumbnailsWidth, vod.FieldSpriteThumbnailsHeight, vod.FieldSpriteThumbnailsRows, vod.FieldSpriteThumbnailsColumns, vod.FieldStorageSizeBytes:
 			values[i] = new(sql.NullInt64)
-		case vod.FieldExtID, vod.FieldClipExtVodID, vod.FieldExtStreamID, vod.FieldPlatform, vod.FieldType, vod.FieldTitle, vod.FieldResolution, vod.FieldThumbnailPath, vod.FieldWebThumbnailPath, vod.FieldVideoPath, vod.FieldVideoHlsPath, vod.FieldChatPath, vod.FieldLiveChatPath, vod.FieldLiveChatConvertPath, vod.FieldChatVideoPath, vod.FieldInfoPath, vod.FieldCaptionPath, vod.FieldFolderName, vod.FieldFileName, vod.FieldTmpVideoDownloadPath, vod.FieldTmpVideoConvertPath, vod.FieldTmpChatDownloadPath, vod.FieldTmpLiveChatDownloadPath, vod.FieldTmpLiveChatConvertPath, vod.FieldTmpChatRenderPath, vod.FieldTmpVideoHlsPath:
+		case vod.FieldExtID, vod.FieldClipExtVodID, vod.FieldExtStreamID, vod.FieldPlatform, vod.FieldType, vod.FieldTitle, vod.FieldResolution, vod.FieldStatus, vod.FieldThumbnailPath, vod.FieldWebThumbnailPath, vod.FieldVideoPath, vod.FieldVideoHlsPath, vod.FieldChatPath, vod.FieldLiveChatPath, vod.FieldLiveChatConvertPath, vod.FieldChatVideoPath, vod.FieldInfoPath, vod.FieldCaptionPath, vod.FieldFolderName, vod.FieldFileName, vod.FieldTmpVideoDownloadPath, vod.FieldTmpVideoConvertPath, vod.FieldTmpChatDownloadPath, vod.FieldTmpLiveChatDownloadPath, vod.FieldTmpLiveChatConvertPath, vod.FieldTmpChatRenderPath, vod.FieldTmpVideoHlsPath, vod.FieldNotes:
 			values[i] = new(sql.NullString)
-		case vod.FieldStreamedAt, vod.FieldUpdatedAt, vod.FieldCreatedAt:
+		case vod.FieldStreamedAt, vod.FieldVideoStartAt, vod.FieldUpdatedAt, vod.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
 		case vod.FieldID:
 			values[i] = new(uuid.UUID)
@@ -292,11 +296,11 @@ func (_m *Vod) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Resolution = value.String
 			}
-		case vod.FieldProcessing:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field processing", values[i])
+		case vod.FieldStatus:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field status", values[i])
 			} else if value.Valid {
-				_m.Processing = value.Bool
+				_m.Status = utils.ArchiveStatus(value.String)
 			}
 		case vod.FieldThumbnailPath:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -418,6 +422,12 @@ func (_m *Vod) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Locked = value.Bool
 			}
+		case vod.FieldNotes:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field notes", values[i])
+			} else if value.Valid {
+				_m.Notes = value.String
+			}
 		case vod.FieldLocalViews:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field local_views", values[i])
@@ -479,6 +489,13 @@ func (_m *Vod) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field streamed_at", values[i])
 			} else if value.Valid {
 				_m.StreamedAt = value.Time
+			}
+		case vod.FieldVideoStartAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field video_start_at", values[i])
+			} else if value.Valid {
+				_m.VideoStartAt = new(time.Time)
+				*_m.VideoStartAt = value.Time
 			}
 		case vod.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -595,8 +612,8 @@ func (_m *Vod) String() string {
 	builder.WriteString("resolution=")
 	builder.WriteString(_m.Resolution)
 	builder.WriteString(", ")
-	builder.WriteString("processing=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Processing))
+	builder.WriteString("status=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Status))
 	builder.WriteString(", ")
 	builder.WriteString("thumbnail_path=")
 	builder.WriteString(_m.ThumbnailPath)
@@ -658,6 +675,9 @@ func (_m *Vod) String() string {
 	builder.WriteString("locked=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Locked))
 	builder.WriteString(", ")
+	builder.WriteString("notes=")
+	builder.WriteString(_m.Notes)
+	builder.WriteString(", ")
 	builder.WriteString("local_views=")
 	builder.WriteString(fmt.Sprintf("%v", _m.LocalViews))
 	builder.WriteString(", ")
@@ -687,6 +707,11 @@ func (_m *Vod) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("streamed_at=")
 	builder.WriteString(_m.StreamedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	if v := _m.VideoStartAt; v != nil {
+		builder.WriteString("video_start_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
 	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))

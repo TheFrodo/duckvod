@@ -155,16 +155,16 @@ func (_c *VodCreate) SetNillableResolution(v *string) *VodCreate {
 	return _c
 }
 
-// SetProcessing sets the "processing" field.
-func (_c *VodCreate) SetProcessing(v bool) *VodCreate {
-	_c.mutation.SetProcessing(v)
+// SetStatus sets the "status" field.
+func (_c *VodCreate) SetStatus(v utils.ArchiveStatus) *VodCreate {
+	_c.mutation.SetStatus(v)
 	return _c
 }
 
-// SetNillableProcessing sets the "processing" field if the given value is not nil.
-func (_c *VodCreate) SetNillableProcessing(v *bool) *VodCreate {
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (_c *VodCreate) SetNillableStatus(v *utils.ArchiveStatus) *VodCreate {
 	if v != nil {
-		_c.SetProcessing(*v)
+		_c.SetStatus(*v)
 	}
 	return _c
 }
@@ -433,6 +433,20 @@ func (_c *VodCreate) SetNillableLocked(v *bool) *VodCreate {
 	return _c
 }
 
+// SetNotes sets the "notes" field.
+func (_c *VodCreate) SetNotes(v string) *VodCreate {
+	_c.mutation.SetNotes(v)
+	return _c
+}
+
+// SetNillableNotes sets the "notes" field if the given value is not nil.
+func (_c *VodCreate) SetNillableNotes(v *string) *VodCreate {
+	if v != nil {
+		_c.SetNotes(*v)
+	}
+	return _c
+}
+
 // SetLocalViews sets the "local_views" field.
 func (_c *VodCreate) SetLocalViews(v int) *VodCreate {
 	_c.mutation.SetLocalViews(v)
@@ -561,6 +575,20 @@ func (_c *VodCreate) SetStreamedAt(v time.Time) *VodCreate {
 func (_c *VodCreate) SetNillableStreamedAt(v *time.Time) *VodCreate {
 	if v != nil {
 		_c.SetStreamedAt(*v)
+	}
+	return _c
+}
+
+// SetVideoStartAt sets the "video_start_at" field.
+func (_c *VodCreate) SetVideoStartAt(v time.Time) *VodCreate {
+	_c.mutation.SetVideoStartAt(v)
+	return _c
+}
+
+// SetNillableVideoStartAt sets the "video_start_at" field if the given value is not nil.
+func (_c *VodCreate) SetNillableVideoStartAt(v *time.Time) *VodCreate {
+	if v != nil {
+		_c.SetVideoStartAt(*v)
 	}
 	return _c
 }
@@ -748,9 +776,9 @@ func (_c *VodCreate) defaults() {
 		v := vod.DefaultViews
 		_c.mutation.SetViews(v)
 	}
-	if _, ok := _c.mutation.Processing(); !ok {
-		v := vod.DefaultProcessing
-		_c.mutation.SetProcessing(v)
+	if _, ok := _c.mutation.Status(); !ok {
+		v := vod.DefaultStatus
+		_c.mutation.SetStatus(v)
 	}
 	if _, ok := _c.mutation.Locked(); !ok {
 		v := vod.DefaultLocked
@@ -816,8 +844,13 @@ func (_c *VodCreate) check() error {
 	if _, ok := _c.mutation.Views(); !ok {
 		return &ValidationError{Name: "views", err: errors.New(`ent: missing required field "Vod.views"`)}
 	}
-	if _, ok := _c.mutation.Processing(); !ok {
-		return &ValidationError{Name: "processing", err: errors.New(`ent: missing required field "Vod.processing"`)}
+	if _, ok := _c.mutation.Status(); !ok {
+		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "Vod.status"`)}
+	}
+	if v, ok := _c.mutation.Status(); ok {
+		if err := vod.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Vod.status": %w`, err)}
+		}
 	}
 	if _, ok := _c.mutation.WebThumbnailPath(); !ok {
 		return &ValidationError{Name: "web_thumbnail_path", err: errors.New(`ent: missing required field "Vod.web_thumbnail_path"`)}
@@ -925,9 +958,9 @@ func (_c *VodCreate) createSpec() (*Vod, *sqlgraph.CreateSpec) {
 		_spec.SetField(vod.FieldResolution, field.TypeString, value)
 		_node.Resolution = value
 	}
-	if value, ok := _c.mutation.Processing(); ok {
-		_spec.SetField(vod.FieldProcessing, field.TypeBool, value)
-		_node.Processing = value
+	if value, ok := _c.mutation.Status(); ok {
+		_spec.SetField(vod.FieldStatus, field.TypeEnum, value)
+		_node.Status = value
 	}
 	if value, ok := _c.mutation.ThumbnailPath(); ok {
 		_spec.SetField(vod.FieldThumbnailPath, field.TypeString, value)
@@ -1009,6 +1042,10 @@ func (_c *VodCreate) createSpec() (*Vod, *sqlgraph.CreateSpec) {
 		_spec.SetField(vod.FieldLocked, field.TypeBool, value)
 		_node.Locked = value
 	}
+	if value, ok := _c.mutation.Notes(); ok {
+		_spec.SetField(vod.FieldNotes, field.TypeString, value)
+		_node.Notes = value
+	}
 	if value, ok := _c.mutation.LocalViews(); ok {
 		_spec.SetField(vod.FieldLocalViews, field.TypeInt, value)
 		_node.LocalViews = value
@@ -1048,6 +1085,10 @@ func (_c *VodCreate) createSpec() (*Vod, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.StreamedAt(); ok {
 		_spec.SetField(vod.FieldStreamedAt, field.TypeTime, value)
 		_node.StreamedAt = value
+	}
+	if value, ok := _c.mutation.VideoStartAt(); ok {
+		_spec.SetField(vod.FieldVideoStartAt, field.TypeTime, value)
+		_node.VideoStartAt = &value
 	}
 	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(vod.FieldUpdatedAt, field.TypeTime, value)
@@ -1368,15 +1409,15 @@ func (u *VodUpsert) ClearResolution() *VodUpsert {
 	return u
 }
 
-// SetProcessing sets the "processing" field.
-func (u *VodUpsert) SetProcessing(v bool) *VodUpsert {
-	u.Set(vod.FieldProcessing, v)
+// SetStatus sets the "status" field.
+func (u *VodUpsert) SetStatus(v utils.ArchiveStatus) *VodUpsert {
+	u.Set(vod.FieldStatus, v)
 	return u
 }
 
-// UpdateProcessing sets the "processing" field to the value that was provided on create.
-func (u *VodUpsert) UpdateProcessing() *VodUpsert {
-	u.SetExcluded(vod.FieldProcessing)
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *VodUpsert) UpdateStatus() *VodUpsert {
+	u.SetExcluded(vod.FieldStatus)
 	return u
 }
 
@@ -1722,6 +1763,24 @@ func (u *VodUpsert) UpdateLocked() *VodUpsert {
 	return u
 }
 
+// SetNotes sets the "notes" field.
+func (u *VodUpsert) SetNotes(v string) *VodUpsert {
+	u.Set(vod.FieldNotes, v)
+	return u
+}
+
+// UpdateNotes sets the "notes" field to the value that was provided on create.
+func (u *VodUpsert) UpdateNotes() *VodUpsert {
+	u.SetExcluded(vod.FieldNotes)
+	return u
+}
+
+// ClearNotes clears the value of the "notes" field.
+func (u *VodUpsert) ClearNotes() *VodUpsert {
+	u.SetNull(vod.FieldNotes)
+	return u
+}
+
 // SetLocalViews sets the "local_views" field.
 func (u *VodUpsert) SetLocalViews(v int) *VodUpsert {
 	u.Set(vod.FieldLocalViews, v)
@@ -1917,6 +1976,24 @@ func (u *VodUpsert) SetStreamedAt(v time.Time) *VodUpsert {
 // UpdateStreamedAt sets the "streamed_at" field to the value that was provided on create.
 func (u *VodUpsert) UpdateStreamedAt() *VodUpsert {
 	u.SetExcluded(vod.FieldStreamedAt)
+	return u
+}
+
+// SetVideoStartAt sets the "video_start_at" field.
+func (u *VodUpsert) SetVideoStartAt(v time.Time) *VodUpsert {
+	u.Set(vod.FieldVideoStartAt, v)
+	return u
+}
+
+// UpdateVideoStartAt sets the "video_start_at" field to the value that was provided on create.
+func (u *VodUpsert) UpdateVideoStartAt() *VodUpsert {
+	u.SetExcluded(vod.FieldVideoStartAt)
+	return u
+}
+
+// ClearVideoStartAt clears the value of the "video_start_at" field.
+func (u *VodUpsert) ClearVideoStartAt() *VodUpsert {
+	u.SetNull(vod.FieldVideoStartAt)
 	return u
 }
 
@@ -2172,17 +2249,17 @@ func (u *VodUpsertOne) ClearResolution() *VodUpsertOne {
 	})
 }
 
-// SetProcessing sets the "processing" field.
-func (u *VodUpsertOne) SetProcessing(v bool) *VodUpsertOne {
+// SetStatus sets the "status" field.
+func (u *VodUpsertOne) SetStatus(v utils.ArchiveStatus) *VodUpsertOne {
 	return u.Update(func(s *VodUpsert) {
-		s.SetProcessing(v)
+		s.SetStatus(v)
 	})
 }
 
-// UpdateProcessing sets the "processing" field to the value that was provided on create.
-func (u *VodUpsertOne) UpdateProcessing() *VodUpsertOne {
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *VodUpsertOne) UpdateStatus() *VodUpsertOne {
 	return u.Update(func(s *VodUpsert) {
-		s.UpdateProcessing()
+		s.UpdateStatus()
 	})
 }
 
@@ -2585,6 +2662,27 @@ func (u *VodUpsertOne) UpdateLocked() *VodUpsertOne {
 	})
 }
 
+// SetNotes sets the "notes" field.
+func (u *VodUpsertOne) SetNotes(v string) *VodUpsertOne {
+	return u.Update(func(s *VodUpsert) {
+		s.SetNotes(v)
+	})
+}
+
+// UpdateNotes sets the "notes" field to the value that was provided on create.
+func (u *VodUpsertOne) UpdateNotes() *VodUpsertOne {
+	return u.Update(func(s *VodUpsert) {
+		s.UpdateNotes()
+	})
+}
+
+// ClearNotes clears the value of the "notes" field.
+func (u *VodUpsertOne) ClearNotes() *VodUpsertOne {
+	return u.Update(func(s *VodUpsert) {
+		s.ClearNotes()
+	})
+}
+
 // SetLocalViews sets the "local_views" field.
 func (u *VodUpsertOne) SetLocalViews(v int) *VodUpsertOne {
 	return u.Update(func(s *VodUpsert) {
@@ -2813,6 +2911,27 @@ func (u *VodUpsertOne) SetStreamedAt(v time.Time) *VodUpsertOne {
 func (u *VodUpsertOne) UpdateStreamedAt() *VodUpsertOne {
 	return u.Update(func(s *VodUpsert) {
 		s.UpdateStreamedAt()
+	})
+}
+
+// SetVideoStartAt sets the "video_start_at" field.
+func (u *VodUpsertOne) SetVideoStartAt(v time.Time) *VodUpsertOne {
+	return u.Update(func(s *VodUpsert) {
+		s.SetVideoStartAt(v)
+	})
+}
+
+// UpdateVideoStartAt sets the "video_start_at" field to the value that was provided on create.
+func (u *VodUpsertOne) UpdateVideoStartAt() *VodUpsertOne {
+	return u.Update(func(s *VodUpsert) {
+		s.UpdateVideoStartAt()
+	})
+}
+
+// ClearVideoStartAt clears the value of the "video_start_at" field.
+func (u *VodUpsertOne) ClearVideoStartAt() *VodUpsertOne {
+	return u.Update(func(s *VodUpsert) {
+		s.ClearVideoStartAt()
 	})
 }
 
@@ -3237,17 +3356,17 @@ func (u *VodUpsertBulk) ClearResolution() *VodUpsertBulk {
 	})
 }
 
-// SetProcessing sets the "processing" field.
-func (u *VodUpsertBulk) SetProcessing(v bool) *VodUpsertBulk {
+// SetStatus sets the "status" field.
+func (u *VodUpsertBulk) SetStatus(v utils.ArchiveStatus) *VodUpsertBulk {
 	return u.Update(func(s *VodUpsert) {
-		s.SetProcessing(v)
+		s.SetStatus(v)
 	})
 }
 
-// UpdateProcessing sets the "processing" field to the value that was provided on create.
-func (u *VodUpsertBulk) UpdateProcessing() *VodUpsertBulk {
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *VodUpsertBulk) UpdateStatus() *VodUpsertBulk {
 	return u.Update(func(s *VodUpsert) {
-		s.UpdateProcessing()
+		s.UpdateStatus()
 	})
 }
 
@@ -3650,6 +3769,27 @@ func (u *VodUpsertBulk) UpdateLocked() *VodUpsertBulk {
 	})
 }
 
+// SetNotes sets the "notes" field.
+func (u *VodUpsertBulk) SetNotes(v string) *VodUpsertBulk {
+	return u.Update(func(s *VodUpsert) {
+		s.SetNotes(v)
+	})
+}
+
+// UpdateNotes sets the "notes" field to the value that was provided on create.
+func (u *VodUpsertBulk) UpdateNotes() *VodUpsertBulk {
+	return u.Update(func(s *VodUpsert) {
+		s.UpdateNotes()
+	})
+}
+
+// ClearNotes clears the value of the "notes" field.
+func (u *VodUpsertBulk) ClearNotes() *VodUpsertBulk {
+	return u.Update(func(s *VodUpsert) {
+		s.ClearNotes()
+	})
+}
+
 // SetLocalViews sets the "local_views" field.
 func (u *VodUpsertBulk) SetLocalViews(v int) *VodUpsertBulk {
 	return u.Update(func(s *VodUpsert) {
@@ -3878,6 +4018,27 @@ func (u *VodUpsertBulk) SetStreamedAt(v time.Time) *VodUpsertBulk {
 func (u *VodUpsertBulk) UpdateStreamedAt() *VodUpsertBulk {
 	return u.Update(func(s *VodUpsert) {
 		s.UpdateStreamedAt()
+	})
+}
+
+// SetVideoStartAt sets the "video_start_at" field.
+func (u *VodUpsertBulk) SetVideoStartAt(v time.Time) *VodUpsertBulk {
+	return u.Update(func(s *VodUpsert) {
+		s.SetVideoStartAt(v)
+	})
+}
+
+// UpdateVideoStartAt sets the "video_start_at" field to the value that was provided on create.
+func (u *VodUpsertBulk) UpdateVideoStartAt() *VodUpsertBulk {
+	return u.Update(func(s *VodUpsert) {
+		s.UpdateVideoStartAt()
+	})
+}
+
+// ClearVideoStartAt clears the value of the "video_start_at" field.
+func (u *VodUpsertBulk) ClearVideoStartAt() *VodUpsertBulk {
+	return u.Update(func(s *VodUpsert) {
+		s.ClearVideoStartAt()
 	})
 }
 

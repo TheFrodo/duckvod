@@ -4,25 +4,20 @@ package docs
 import "github.com/swaggo/swag"
 
 const docTemplate = `{
-    "schemes": {{ marshal .Schemes }},
+    "schemes": [[ marshal .Schemes ]],
     "swagger": "2.0",
     "info": {
-        "description": "{{escape .Description}}",
-        "title": "{{.Title}}",
+        "description": "[[escape .Description]]",
+        "title": "[[.Title]]",
         "contact": {},
-        "version": "{{.Version}}"
+        "version": "[[.Version]]"
     },
-    "host": "{{.Host}}",
-    "basePath": "{{.BasePath}}",
+    "host": "[[.Host]]",
+    "basePath": "[[.BasePath]]",
     "paths": {
         "/admin/api-keys": {
             "get": {
-                "security": [
-                    {
-                        "ApiKeyCookieAuth": []
-                    }
-                ],
-                "description": "Returns API keys, newest first. By default only active (non-revoked) keys are returned; pass ?include_revoked=true for a full audit listing. Secrets are never returned by this endpoint.",
+                "description": "Returns API keys, newest first. By default only active (non-revoked) keys are returned; pass ?include_revoked=true for a full audit listing. Secrets are never returned by this endpoint. Requires an interactive administrator browser session; API keys are not accepted.",
                 "produces": [
                     "application/json"
                 ],
@@ -57,12 +52,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "security": [
-                    {
-                        "ApiKeyCookieAuth": []
-                    }
-                ],
-                "description": "Mints a new admin-managed API key. The full secret is returned in the response and is the only time it is visible — store it securely.",
+                "description": "Mints a new admin-managed API key. The full secret is returned in the response and is the only time it is visible — store it securely. Requires an interactive administrator browser session; API keys are not accepted.",
                 "consumes": [
                     "application/json"
                 ],
@@ -108,12 +98,7 @@ const docTemplate = `{
         },
         "/admin/api-keys/{id}": {
             "put": {
-                "security": [
-                    {
-                        "ApiKeyCookieAuth": []
-                    }
-                ],
-                "description": "Replaces an existing API key's editable fields (name, description, scopes). Prefix and secret are immutable — rotating a key still means revoke + create.",
+                "description": "Replaces an existing API key's editable fields (name, description, scopes). Prefix and secret are immutable — rotating a key still means revoke + create. Requires an interactive administrator browser session; API keys are not accepted.",
                 "consumes": [
                     "application/json"
                 ],
@@ -170,12 +155,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "security": [
-                    {
-                        "ApiKeyCookieAuth": []
-                    }
-                ],
-                "description": "Soft-deletes an API key by setting revoked_at. The verification cache is flushed so the key stops authenticating immediately.",
+                "description": "Soft-deletes an API key by setting revoked_at. The verification cache is flushed so the key stops authenticating immediately. Requires an interactive administrator browser session; API keys are not accepted.",
                 "tags": [
                     "admin"
                 ],
@@ -218,9 +198,6 @@ const docTemplate = `{
             "get": {
                 "security": [
                     {
-                        "ApiKeyCookieAuth": []
-                    },
-                    {
                         "ApiKeyAuth": []
                     }
                 ],
@@ -255,9 +232,6 @@ const docTemplate = `{
             "get": {
                 "security": [
                     {
-                        "ApiKeyCookieAuth": []
-                    },
-                    {
                         "ApiKeyAuth": []
                     }
                 ],
@@ -288,12 +262,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/admin/system/overview": {
+        "/admin/system-overview": {
             "get": {
                 "security": [
-                    {
-                        "ApiKeyCookieAuth": []
-                    },
                     {
                         "ApiKeyAuth": []
                     }
@@ -325,12 +296,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/admin/video/statistics": {
+        "/admin/video-statistics": {
             "get": {
                 "security": [
-                    {
-                        "ApiKeyCookieAuth": []
-                    },
                     {
                         "ApiKeyAuth": []
                     }
@@ -365,9 +333,6 @@ const docTemplate = `{
         "/archive/channel": {
             "post": {
                 "security": [
-                    {
-                        "ApiKeyCookieAuth": []
-                    },
                     {
                         "ApiKeyAuth": []
                     }
@@ -416,12 +381,60 @@ const docTemplate = `{
                 }
             }
         },
-        "/archive/video": {
+        "/archive/convert-twitch-live-chat": {
             "post": {
                 "security": [
                     {
-                        "ApiKeyCookieAuth": []
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Convert a twitch live chat file to TDL chat format (debug route)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "archive"
+                ],
+                "summary": "Convert twitch live chat file",
+                "parameters": [
+                    {
+                        "description": "Convert chat",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.ConvertTwitchChatRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
                     },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/archive/video": {
+            "post": {
+                "security": [
                     {
                         "ApiKeyAuth": []
                     }
@@ -461,6 +474,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -472,12 +491,7 @@ const docTemplate = `{
         },
         "/auth/change-password": {
             "post": {
-                "security": [
-                    {
-                        "ApiKeyCookieAuth": []
-                    }
-                ],
-                "description": "Change password",
+                "description": "Change the password for the user associated with the current interactive browser session. API keys are not accepted.",
                 "consumes": [
                     "application/json"
                 ],
@@ -529,7 +543,7 @@ const docTemplate = `{
         },
         "/auth/login": {
             "post": {
-                "description": "Login a user (sets access-token and refresh-token cookies). Access token lasts for 1 hour. Refresh token lasts for 1 month.",
+                "description": "Login with a username and password and establish an HTTP-only session cookie. The session has a 30-day maximum lifetime and expires after 7 days of inactivity.",
                 "consumes": [
                     "application/json"
                 ],
@@ -579,14 +593,38 @@ const docTemplate = `{
                 }
             }
         },
+        "/auth/logout": {
+            "post": {
+                "description": "Destroy the current interactive browser session. API keys are not accepted.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Logout a user",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/me": {
             "get": {
-                "security": [
-                    {
-                        "ApiKeyCookieAuth": []
-                    }
-                ],
-                "description": "Get current user",
+                "description": "Get the user associated with the current interactive browser session. API keys are not accepted.",
                 "consumes": [
                     "application/json"
                 ],
@@ -627,34 +665,32 @@ const docTemplate = `{
         },
         "/auth/oauth/callback": {
             "get": {
-                "description": "OAuth callback for OAuth provider",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
+                "description": "Complete the OAuth login flow, establish an HTTP-only session cookie, and redirect to the frontend.",
                 "tags": [
                     "auth"
                 ],
                 "summary": "OAuth callback",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "OAuth authorization code",
+                        "name": "code",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "OAuth state",
+                        "name": "state",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "302": {
+                        "description": "Found",
                         "schema": {
                             "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/utils.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     },
                     "500": {
@@ -668,32 +704,20 @@ const docTemplate = `{
         },
         "/auth/oauth/login": {
             "get": {
-                "description": "Login a user with OAuth (sets access-token and refresh-token cookies)",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
+                "description": "Start the OAuth login flow. A successful callback establishes an HTTP-only session cookie.",
                 "tags": [
                     "auth"
                 ],
                 "summary": "Login a user with OAuth",
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "307": {
+                        "description": "Temporary Redirect",
                         "schema": {
-                            "$ref": "#/definitions/ent.User"
+                            "type": "string"
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/utils.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/utils.ErrorResponse"
                         }
@@ -759,6 +783,208 @@ const docTemplate = `{
                 }
             }
         },
+        "/blocked-video": {
+            "get": {
+                "description": "Get all blocked videos",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "blocked-video"
+                ],
+                "summary": "Get blocked videos",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/ent.BlockedVideos"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/blocked-video/{id}": {
+            "get": {
+                "description": "Check if a video is on the blocked list",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "blocked-video"
+                ],
+                "summary": "Check if video is blocked",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Video ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Add a video to the blocked list",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "blocked-video"
+                ],
+                "summary": "Block a video",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Video ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Remove a video from the blocked list",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "blocked-video"
+                ],
+                "summary": "Unblock a video",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Video ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/category": {
+            "get": {
+                "description": "Get cached twitch categories",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "category"
+                ],
+                "summary": "Get twitch categories",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/ent.TwitchCategory"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/channel": {
             "get": {
                 "description": "Returns all channels",
@@ -798,9 +1024,6 @@ const docTemplate = `{
             },
             "post": {
                 "security": [
-                    {
-                        "ApiKeyCookieAuth": []
-                    },
                     {
                         "ApiKeyAuth": []
                     }
@@ -951,9 +1174,6 @@ const docTemplate = `{
             "put": {
                 "security": [
                     {
-                        "ApiKeyCookieAuth": []
-                    },
-                    {
                         "ApiKeyAuth": []
                     }
                 ],
@@ -1016,9 +1236,6 @@ const docTemplate = `{
             "delete": {
                 "security": [
                     {
-                        "ApiKeyCookieAuth": []
-                    },
-                    {
                         "ApiKeyAuth": []
                     }
                 ],
@@ -1067,12 +1284,149 @@ const docTemplate = `{
                 }
             }
         },
+        "/channel/{id}/update-image": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update channel image from platform",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "channel"
+                ],
+                "summary": "Update channel image",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Channel ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/chapter/video/{videoId}": {
+            "get": {
+                "description": "Get chapters for a video",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "chapter"
+                ],
+                "summary": "Get video chapters",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Video ID",
+                        "name": "videoId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/ent.Chapter"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/chapter/video/{videoId}/webvtt": {
+            "get": {
+                "description": "Get chapters for a video in WebVTT format",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "text/vtt"
+                ],
+                "tags": [
+                    "chapter"
+                ],
+                "summary": "Get video chapters as WebVTT",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Video ID",
+                        "name": "videoId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/config": {
             "get": {
                 "security": [
-                    {
-                        "ApiKeyCookieAuth": []
-                    },
                     {
                         "ApiKeyAuth": []
                     }
@@ -1105,9 +1459,6 @@ const docTemplate = `{
             },
             "put": {
                 "security": [
-                    {
-                        "ApiKeyCookieAuth": []
-                    },
                     {
                         "ApiKeyAuth": []
                     }
@@ -1160,9 +1511,6 @@ const docTemplate = `{
             "get": {
                 "security": [
                     {
-                        "ApiKeyCookieAuth": []
-                    },
-                    {
                         "ApiKeyAuth": []
                     }
                 ],
@@ -1197,9 +1545,6 @@ const docTemplate = `{
             },
             "post": {
                 "security": [
-                    {
-                        "ApiKeyCookieAuth": []
-                    },
                     {
                         "ApiKeyAuth": []
                     }
@@ -1248,12 +1593,43 @@ const docTemplate = `{
                 }
             }
         },
+        "/live/check": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Trigger a manual check for live streams on watched channels",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Live"
+                ],
+                "summary": "Manually check for live streams",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/live/{id}": {
             "put": {
                 "security": [
-                    {
-                        "ApiKeyCookieAuth": []
-                    },
                     {
                         "ApiKeyAuth": []
                     }
@@ -1311,9 +1687,6 @@ const docTemplate = `{
             "delete": {
                 "security": [
                     {
-                        "ApiKeyCookieAuth": []
-                    },
-                    {
                         "ApiKeyAuth": []
                     }
                 ],
@@ -1363,9 +1736,6 @@ const docTemplate = `{
             "get": {
                 "security": [
                     {
-                        "ApiKeyCookieAuth": []
-                    },
-                    {
                         "ApiKeyAuth": []
                     }
                 ],
@@ -1400,9 +1770,6 @@ const docTemplate = `{
             },
             "post": {
                 "security": [
-                    {
-                        "ApiKeyCookieAuth": []
-                    },
                     {
                         "ApiKeyAuth": []
                     }
@@ -1454,9 +1821,6 @@ const docTemplate = `{
         "/notification/{id}": {
             "get": {
                 "security": [
-                    {
-                        "ApiKeyCookieAuth": []
-                    },
                     {
                         "ApiKeyAuth": []
                     }
@@ -1510,9 +1874,6 @@ const docTemplate = `{
             },
             "put": {
                 "security": [
-                    {
-                        "ApiKeyCookieAuth": []
-                    },
                     {
                         "ApiKeyAuth": []
                     }
@@ -1576,9 +1937,6 @@ const docTemplate = `{
             "delete": {
                 "security": [
                     {
-                        "ApiKeyCookieAuth": []
-                    },
-                    {
                         "ApiKeyAuth": []
                     }
                 ],
@@ -1630,9 +1988,6 @@ const docTemplate = `{
         "/notification/{id}/test": {
             "post": {
                 "security": [
-                    {
-                        "ApiKeyCookieAuth": []
-                    },
                     {
                         "ApiKeyAuth": []
                     }
@@ -1693,12 +2048,7 @@ const docTemplate = `{
         },
         "/playback": {
             "get": {
-                "security": [
-                    {
-                        "ApiKeyCookieAuth": []
-                    }
-                ],
-                "description": "Get all playback progress",
+                "description": "Get all playback progress for the current user. Requires an interactive browser session; API keys are not accepted.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1728,14 +2078,53 @@ const docTemplate = `{
                 }
             }
         },
-        "/playback/progress": {
-            "post": {
-                "security": [
+        "/playback/last": {
+            "get": {
+                "description": "Get the latest playback entries for the current user. Requires an interactive browser session; API keys are not accepted.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Playback"
+                ],
+                "summary": "Get last playbacks",
+                "parameters": [
                     {
-                        "ApiKeyCookieAuth": []
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Limit",
+                        "name": "limit",
+                        "in": "query"
                     }
                 ],
-                "description": "Update playback progress",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/playback.GetPlaybackResp"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/playback/progress": {
+            "post": {
+                "description": "Update playback progress for the current user. Requires an interactive browser session; API keys are not accepted.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1779,55 +2168,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/playback/progress/{id}": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyCookieAuth": []
-                    }
-                ],
-                "description": "Get playback progress",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Playback"
-                ],
-                "summary": "Get progress",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "vod id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/ent.Playback"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/utils.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/utils.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/playback/start": {
             "post": {
                 "description": "Adds a view to the video local view count",
@@ -1845,8 +2185,8 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "vod id",
-                        "name": "id",
-                        "in": "path",
+                        "name": "video_id",
+                        "in": "query",
                         "required": true
                     }
                 ],
@@ -1874,12 +2214,7 @@ const docTemplate = `{
         },
         "/playback/status": {
             "post": {
-                "security": [
-                    {
-                        "ApiKeyCookieAuth": []
-                    }
-                ],
-                "description": "Update playback status",
+                "description": "Update playback status for the current user. Requires an interactive browser session; API keys are not accepted.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1924,13 +2259,50 @@ const docTemplate = `{
             }
         },
         "/playback/{id}": {
-            "delete": {
-                "security": [
+            "get": {
+                "description": "Get playback progress for the current user. Requires an interactive browser session; API keys are not accepted.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Playback"
+                ],
+                "summary": "Get progress",
+                "parameters": [
                     {
-                        "ApiKeyCookieAuth": []
+                        "type": "string",
+                        "description": "vod id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
                     }
                 ],
-                "description": "Delete playback progress",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ent.Playback"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete playback progress for the current user. Requires an interactive browser session; API keys are not accepted.",
                 "consumes": [
                     "application/json"
                 ],
@@ -2005,9 +2377,6 @@ const docTemplate = `{
             },
             "post": {
                 "security": [
-                    {
-                        "ApiKeyCookieAuth": []
-                    },
                     {
                         "ApiKeyAuth": []
                     }
@@ -2108,9 +2477,6 @@ const docTemplate = `{
             "put": {
                 "security": [
                     {
-                        "ApiKeyCookieAuth": []
-                    },
-                    {
                         "ApiKeyAuth": []
                     }
                 ],
@@ -2166,9 +2532,6 @@ const docTemplate = `{
             },
             "post": {
                 "security": [
-                    {
-                        "ApiKeyCookieAuth": []
-                    },
                     {
                         "ApiKeyAuth": []
                     }
@@ -2226,9 +2589,6 @@ const docTemplate = `{
             "delete": {
                 "security": [
                     {
-                        "ApiKeyCookieAuth": []
-                    },
-                    {
                         "ApiKeyAuth": []
                     }
                 ],
@@ -2277,9 +2637,6 @@ const docTemplate = `{
         "/playlist/{id}/multistream/delay": {
             "put": {
                 "security": [
-                    {
-                        "ApiKeyCookieAuth": []
-                    },
                     {
                         "ApiKeyAuth": []
                     }
@@ -2339,9 +2696,6 @@ const docTemplate = `{
             "get": {
                 "security": [
                     {
-                        "ApiKeyCookieAuth": []
-                    },
-                    {
                         "ApiKeyAuth": []
                     }
                 ],
@@ -2392,64 +2746,7 @@ const docTemplate = `{
             "put": {
                 "security": [
                     {
-                        "ApiKeyCookieAuth": []
-                    },
-                    {
                         "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Test rules for a playlist against a video id",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Playlist"
-                ],
-                "summary": "Test playlist rules",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "playlist id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "video id",
-                        "name": "video_id",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "boolean"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/utils.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/utils.ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "ApiKeyCookieAuth": []
                     }
                 ],
                 "description": "Set rules for a playlist this will delete all existing rules and set new ones",
@@ -2503,12 +2800,65 @@ const docTemplate = `{
                 }
             }
         },
+        "/playlist/{id}/rules/test": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Test rules for a playlist against a video id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Playlist"
+                ],
+                "summary": "Test playlist rules",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "playlist id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "video id",
+                        "name": "video_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/playlist/{id}/vod": {
             "delete": {
                 "security": [
-                    {
-                        "ApiKeyCookieAuth": []
-                    },
                     {
                         "ApiKeyAuth": []
                     }
@@ -2568,9 +2918,6 @@ const docTemplate = `{
             "get": {
                 "security": [
                     {
-                        "ApiKeyCookieAuth": []
-                    },
-                    {
                         "ApiKeyAuth": []
                     }
                 ],
@@ -2588,8 +2935,8 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Get processing queue items",
-                        "name": "processing",
+                        "description": "Comma-separated archive statuses: queued,running,finalizing,completed,failed",
+                        "name": "status",
                         "in": "query"
                     }
                 ],
@@ -2619,9 +2966,6 @@ const docTemplate = `{
             },
             "post": {
                 "security": [
-                    {
-                        "ApiKeyCookieAuth": []
-                    },
                     {
                         "ApiKeyAuth": []
                     }
@@ -2674,13 +3018,10 @@ const docTemplate = `{
             "post": {
                 "security": [
                     {
-                        "ApiKeyCookieAuth": []
-                    },
-                    {
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Start a specific queue task",
+                "description": "Atomically schedule a new generation of a queue task",
                 "consumes": [
                     "application/json"
                 ],
@@ -2690,16 +3031,39 @@ const docTemplate = `{
                 "tags": [
                     "queue"
                 ],
-                "summary": "Start a queue task for a queue",
+                "summary": "Restart a queue task",
+                "parameters": [
+                    {
+                        "description": "Start queue task",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.StartQueueTaskRequest"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/queue.RestartResult"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
                         "schema": {
                             "$ref": "#/definitions/utils.ErrorResponse"
                         }
@@ -2716,9 +3080,6 @@ const docTemplate = `{
         "/queue/{id}": {
             "get": {
                 "security": [
-                    {
-                        "ApiKeyCookieAuth": []
-                    },
                     {
                         "ApiKeyAuth": []
                     }
@@ -2766,9 +3127,6 @@ const docTemplate = `{
             },
             "put": {
                 "security": [
-                    {
-                        "ApiKeyCookieAuth": []
-                    },
                     {
                         "ApiKeyAuth": []
                     }
@@ -2826,9 +3184,6 @@ const docTemplate = `{
             "delete": {
                 "security": [
                     {
-                        "ApiKeyCookieAuth": []
-                    },
-                    {
                         "ApiKeyAuth": []
                     }
                 ],
@@ -2874,9 +3229,6 @@ const docTemplate = `{
         "/queue/{id}/stop": {
             "post": {
                 "security": [
-                    {
-                        "ApiKeyCookieAuth": []
-                    },
                     {
                         "ApiKeyAuth": []
                     }
@@ -2926,9 +3278,6 @@ const docTemplate = `{
         "/queue/{id}/tail": {
             "get": {
                 "security": [
-                    {
-                        "ApiKeyCookieAuth": []
-                    },
                     {
                         "ApiKeyAuth": []
                     }
@@ -2985,9 +3334,6 @@ const docTemplate = `{
         "/task/start": {
             "post": {
                 "security": [
-                    {
-                        "ApiKeyCookieAuth": []
-                    },
                     {
                         "ApiKeyAuth": []
                     }
@@ -3119,9 +3465,6 @@ const docTemplate = `{
             "get": {
                 "security": [
                     {
-                        "ApiKeyCookieAuth": []
-                    },
-                    {
                         "ApiKeyAuth": []
                     }
                 ],
@@ -3164,9 +3507,6 @@ const docTemplate = `{
         "/user/{id}": {
             "get": {
                 "security": [
-                    {
-                        "ApiKeyCookieAuth": []
-                    },
                     {
                         "ApiKeyAuth": []
                     }
@@ -3214,9 +3554,6 @@ const docTemplate = `{
             },
             "put": {
                 "security": [
-                    {
-                        "ApiKeyCookieAuth": []
-                    },
                     {
                         "ApiKeyAuth": []
                     }
@@ -3273,9 +3610,6 @@ const docTemplate = `{
             },
             "delete": {
                 "security": [
-                    {
-                        "ApiKeyCookieAuth": []
-                    },
                     {
                         "ApiKeyAuth": []
                     }
@@ -3367,9 +3701,6 @@ const docTemplate = `{
             "post": {
                 "security": [
                     {
-                        "ApiKeyCookieAuth": []
-                    },
-                    {
                         "ApiKeyAuth": []
                     }
                 ],
@@ -3417,7 +3748,81 @@ const docTemplate = `{
                 }
             }
         },
-        "/vod/pagination": {
+        "/vod/external_id/{external_id}": {
+            "get": {
+                "description": "Get a vod by platform external ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vods"
+                ],
+                "summary": "Get a vod by external ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Vod external ID",
+                        "name": "external_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "With channel",
+                        "name": "with_channel",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "With chapters",
+                        "name": "with_chapters",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "With muted segments",
+                        "name": "with_muted_segments",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "With queue",
+                        "name": "with_queue",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.VideoDetails"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/vod/paginate": {
             "get": {
                 "description": "Get vods pagination",
                 "consumes": [
@@ -3465,8 +3870,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Processing. Set to false to exclude videos that are still processing.",
-                        "name": "processing",
+                        "description": "Comma-separated archive statuses: queued,running,finalizing,completed,failed",
+                        "name": "status",
                         "in": "query"
                     }
                 ],
@@ -3514,6 +3919,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
+                        "type": "string",
+                        "description": "Comma-separated search fields: title, notes, id, ext_id, chapter, channel_name, channel_id, channel_ext_id (defaults to title)",
+                        "name": "fields",
+                        "in": "query"
+                    },
+                    {
                         "type": "integer",
                         "default": 10,
                         "description": "Limit",
@@ -3555,7 +3966,7 @@ const docTemplate = `{
         },
         "/vod/{id}": {
             "get": {
-                "description": "Get a vod",
+                "description": "Get a vod by ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -3575,21 +3986,27 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "type": "string",
+                        "type": "boolean",
                         "description": "With channel",
                         "name": "with_channel",
                         "in": "query"
                     },
                     {
-                        "type": "string",
+                        "type": "boolean",
                         "description": "With chapters",
                         "name": "with_chapters",
                         "in": "query"
                     },
                     {
-                        "type": "string",
+                        "type": "boolean",
                         "description": "With muted segments",
                         "name": "with_muted_segments",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "With queue",
+                        "name": "with_queue",
                         "in": "query"
                     }
                 ],
@@ -3597,7 +4014,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/ent.Vod"
+                            "$ref": "#/definitions/http.VideoDetails"
                         }
                     },
                     "400": {
@@ -3622,9 +4039,6 @@ const docTemplate = `{
             },
             "put": {
                 "security": [
-                    {
-                        "ApiKeyCookieAuth": []
-                    },
                     {
                         "ApiKeyAuth": []
                     }
@@ -3688,9 +4102,6 @@ const docTemplate = `{
             "delete": {
                 "security": [
                     {
-                        "ApiKeyCookieAuth": []
-                    },
-                    {
                         "ApiKeyAuth": []
                     }
                 ],
@@ -3714,7 +4125,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "type": "string",
+                        "type": "boolean",
                         "description": "Delete files",
                         "name": "delete_files",
                         "in": "query"
@@ -3973,6 +4384,50 @@ const docTemplate = `{
                 }
             }
         },
+        "/vod/{id}/chat/histogram": {
+            "get": {
+                "description": "Get a histogram of chat activity for a vod",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vods"
+                ],
+                "summary": "Get vod chat histogram",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Vod ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/vod/{id}/chat/seek": {
             "get": {
                 "description": "Get N number of vod chat comments before the start time (used for seeking)",
@@ -4089,12 +4544,56 @@ const docTemplate = `{
                 }
             }
         },
-        "/vod/{id}/ffprobe": {
+        "/vod/{id}/clips": {
             "get": {
-                "security": [
+                "description": "Get clips that were created from a vod",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vods"
+                ],
+                "summary": "Get clips of a vod",
+                "parameters": [
                     {
-                        "ApiKeyCookieAuth": []
+                        "type": "string",
+                        "description": "Vod ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/ent.Vod"
+                            }
+                        }
                     },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/vod/{id}/ffprobe": {
+            "post": {
+                "security": [
                     {
                         "ApiKeyAuth": []
                     }
@@ -4107,7 +4606,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "exec"
+                    "vods"
                 ],
                 "summary": "Get ffprobe data for video",
                 "parameters": [
@@ -4124,6 +4623,223 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "type": "object"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/vod/{id}/generate-sprite-thumbnails": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Queue a job to generate sprite thumbnails for a vod",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vods"
+                ],
+                "summary": "Generate sprite thumbnails for a vod",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Vod ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/vod/{id}/generate-static-thumbnail": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Queue a job to generate a static thumbnail for a vod",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vods"
+                ],
+                "summary": "Generate static thumbnail for a vod",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Vod ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/vod/{id}/lock": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Lock or unlock a vod to prevent deletion",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vods"
+                ],
+                "summary": "Lock or unlock a vod",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Vod ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Set to false to unlock, defaults to true",
+                        "name": "locked",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/vod/{id}/notes": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update notes for a VOD",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vods"
+                ],
+                "summary": "Update vod notes",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Vod ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Vod notes",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.UpdateVodNotesRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ent.Vod"
                         }
                     },
                     "400": {
@@ -4202,12 +4918,71 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/vod/{id}/thumbnails/vtt": {
+            "get": {
+                "description": "Get a WebVTT file describing sprite thumbnails for a vod",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "text/vtt"
+                ],
+                "tags": [
+                    "vods"
+                ],
+                "summary": "Get sprite thumbnails VTT for a vod",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Vod ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
         "admin.GetStorageDistributionResponse": {
             "type": "object",
             "properties": {
+                "largest_videos": {
+                    "description": "Top largest videos by storage size",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/admin.LargestVideoItem"
+                    }
+                },
+                "storage_by_type": {
+                    "description": "Map of video types to total storage used in bytes",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                },
                 "storage_distribution": {
                     "description": "Map of channel names to total storage used",
                     "type": "object",
@@ -4229,12 +5004,22 @@ const docTemplate = `{
                     "description": "Total memory in bytes",
                     "type": "integer"
                 },
+                "queue": {
+                    "$ref": "#/definitions/admin.QueueOverview"
+                },
+                "user_count": {
+                    "type": "integer"
+                },
                 "videos_directory_free_space": {
                     "description": "Free space in bytes",
                     "type": "integer"
                 },
+                "videos_directory_total_space": {
+                    "description": "Filesystem capacity in bytes",
+                    "type": "integer"
+                },
                 "videos_directory_used_space": {
-                    "description": "Used space in bytes",
+                    "description": "Tracked VOD storage in bytes",
                     "type": "integer"
                 }
             }
@@ -4250,6 +5035,18 @@ const docTemplate = `{
                     "additionalProperties": {
                         "type": "integer"
                     }
+                },
+                "total_duration_seconds": {
+                    "type": "integer"
+                },
+                "total_local_views": {
+                    "type": "integer"
+                },
+                "total_storage_bytes": {
+                    "type": "integer"
+                },
+                "total_views": {
+                    "type": "integer"
                 },
                 "video_count": {
                     "type": "integer"
@@ -4282,6 +5079,29 @@ const docTemplate = `{
                 }
             }
         },
+        "admin.LargestVideoItem": {
+            "type": "object",
+            "properties": {
+                "channel_name": {
+                    "type": "string"
+                },
+                "duration": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "storage_size_bytes": {
+                    "type": "integer"
+                },
+                "streamed_at": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
         "admin.ProgramVersions": {
             "type": "object",
             "properties": {
@@ -4293,6 +5113,26 @@ const docTemplate = `{
                 },
                 "yt_dlp": {
                     "type": "string"
+                }
+            }
+        },
+        "admin.QueueOverview": {
+            "type": "object",
+            "properties": {
+                "failed": {
+                    "type": "integer"
+                },
+                "live_archiving": {
+                    "type": "integer"
+                },
+                "on_hold": {
+                    "type": "integer"
+                },
+                "processing": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
                 }
             }
         },
@@ -4619,10 +5459,6 @@ const docTemplate = `{
                             "items": {
                                 "type": "string"
                             }
-                        },
-                        "watch_while_archiving": {
-                            "description": "Allow watching live streams while archiving them by downloading a temporary HLS stream.",
-                            "type": "boolean"
                         }
                     }
                 },
@@ -4670,6 +5506,15 @@ const docTemplate = `{
                             "$ref": "#/definitions/config.StorageTemplate"
                         }
                     ]
+                },
+                "tasks": {
+                    "type": "object",
+                    "properties": {
+                        "periodic_update_channels": {
+                            "description": "Enable periodic channel updates - can cause disks to spin up as it checks profile images.",
+                            "type": "boolean"
+                        }
+                    }
                 },
                 "video_check_interval_minutes": {
                     "description": "How often in minutes watched channels are checked for new videos.",
@@ -4756,6 +5601,19 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "folder_template": {
+                    "type": "string"
+                }
+            }
+        },
+        "ent.BlockedVideos": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "description": "CreatedAt holds the value of the \"created_at\" field.",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "ID of the ent.\nThe ID of the blocked vod.",
                     "type": "string"
                 }
             }
@@ -4893,6 +5751,10 @@ const docTemplate = `{
                     "description": "Whether the selected categories are blacklisted.",
                     "type": "boolean"
                 },
+                "clip_resolution": {
+                    "description": "Clip archive quality.",
+                    "type": "string"
+                },
                 "clips_ignore_last_checked": {
                     "description": "Ignore last checked time and check all clips.",
                     "type": "boolean"
@@ -4974,7 +5836,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "vod_resolution": {
-                    "description": "Video and clip archive quality.",
+                    "description": "Video archive quality.",
                     "type": "string"
                 },
                 "watch_clips": {
@@ -5392,10 +6254,6 @@ const docTemplate = `{
                     "description": "ArchiveChat holds the value of the \"archive_chat\" field.",
                     "type": "boolean"
                 },
-                "chat_processing": {
-                    "description": "ChatProcessing holds the value of the \"chat_processing\" field.",
-                    "type": "boolean"
-                },
                 "chat_start": {
                     "description": "ChatStart holds the value of the \"chat_start\" field.",
                     "type": "string"
@@ -5422,10 +6280,6 @@ const docTemplate = `{
                 },
                 "on_hold": {
                     "description": "OnHold holds the value of the \"on_hold\" field.",
-                    "type": "boolean"
-                },
-                "processing": {
-                    "description": "Processing holds the value of the \"processing\" field.",
                     "type": "boolean"
                 },
                 "render_chat": {
@@ -5516,10 +6370,6 @@ const docTemplate = `{
                     "description": "UpdatedAt holds the value of the \"updated_at\" field.",
                     "type": "string"
                 },
-                "video_processing": {
-                    "description": "VideoProcessing holds the value of the \"video_processing\" field.",
-                    "type": "boolean"
-                },
                 "workflow_id": {
                     "description": "WorkflowID holds the value of the \"workflow_id\" field.",
                     "type": "string"
@@ -5540,6 +6390,35 @@ const docTemplate = `{
                             "$ref": "#/definitions/ent.Vod"
                         }
                     ]
+                }
+            }
+        },
+        "ent.TwitchCategory": {
+            "type": "object",
+            "properties": {
+                "box_art_url": {
+                    "description": "BoxArtURL holds the value of the \"box_art_url\" field.",
+                    "type": "string"
+                },
+                "created_at": {
+                    "description": "CreatedAt holds the value of the \"created_at\" field.",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "ID of the ent.",
+                    "type": "string"
+                },
+                "igdb_id": {
+                    "description": "IgdbID holds the value of the \"igdb_id\" field.",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Name holds the value of the \"name\" field.",
+                    "type": "string"
+                },
+                "updated_at": {
+                    "description": "UpdatedAt holds the value of the \"updated_at\" field.",
+                    "type": "string"
                 }
             }
         },
@@ -5663,6 +6542,10 @@ const docTemplate = `{
                     "description": "Locked holds the value of the \"locked\" field.",
                     "type": "boolean"
                 },
+                "notes": {
+                    "description": "User notes about why the VOD was kept.",
+                    "type": "string"
+                },
                 "platform": {
                     "description": "The platform the VOD is from, takes an enum.",
                     "allOf": [
@@ -5670,10 +6553,6 @@ const docTemplate = `{
                             "$ref": "#/definitions/utils.VideoPlatform"
                         }
                     ]
-                },
-                "processing": {
-                    "description": "Whether the VOD is currently processing.",
-                    "type": "boolean"
                 },
                 "resolution": {
                     "description": "Resolution holds the value of the \"resolution\" field.",
@@ -5709,6 +6588,14 @@ const docTemplate = `{
                 "sprite_thumbnails_width": {
                     "description": "SpriteThumbnailsWidth holds the value of the \"sprite_thumbnails_width\" field.",
                     "type": "integer"
+                },
+                "status": {
+                    "description": "Archive processing lifecycle, independent of capture completeness.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/utils.ArchiveStatus"
+                        }
+                    ]
                 },
                 "storage_size_bytes": {
                     "description": "The size of the VOD in bytes.",
@@ -5772,6 +6659,10 @@ const docTemplate = `{
                 },
                 "video_path": {
                     "description": "VideoPath holds the value of the \"video_path\" field.",
+                    "type": "string"
+                },
+                "video_start_at": {
+                    "description": "The wall-clock time that video second 0 corresponds to; for live archives it accounts for capture latency and may equal the chat capture start when unresolvable.",
                     "type": "string"
                 },
                 "views": {
@@ -5885,6 +6776,18 @@ const docTemplate = `{
                 },
                 "channel_id": {
                     "type": "string"
+                },
+                "clip_resolution": {
+                    "type": "string",
+                    "enum": [
+                        "best",
+                        "1440p",
+                        "1080p",
+                        "720p",
+                        "480p",
+                        "360p",
+                        "160p"
+                    ]
                 },
                 "clips_ignore_last_checked": {
                     "type": "boolean"
@@ -6035,6 +6938,32 @@ const docTemplate = `{
                 }
             }
         },
+        "http.ConvertTwitchChatRequest": {
+            "type": "object",
+            "properties": {
+                "channel_id": {
+                    "type": "integer"
+                },
+                "channel_name": {
+                    "type": "string"
+                },
+                "first_message_epoch": {
+                    "type": "string"
+                },
+                "live_chat_path": {
+                    "type": "string"
+                },
+                "previous_video_id": {
+                    "type": "string"
+                },
+                "video_external_id": {
+                    "type": "string"
+                },
+                "video_id": {
+                    "type": "string"
+                }
+            }
+        },
         "http.CreateApiKeyRequest": {
             "type": "object",
             "required": [
@@ -6124,6 +7053,7 @@ const docTemplate = `{
                 "channel_id",
                 "duration",
                 "platform",
+                "status",
                 "streamed_at",
                 "title",
                 "type",
@@ -6160,6 +7090,10 @@ const docTemplate = `{
                 "locked": {
                     "type": "boolean"
                 },
+                "notes": {
+                    "type": "string",
+                    "maxLength": 10000
+                },
                 "platform": {
                     "enum": [
                         "twitch",
@@ -6171,11 +7105,22 @@ const docTemplate = `{
                         }
                     ]
                 },
-                "processing": {
-                    "type": "boolean"
-                },
                 "resolution": {
                     "type": "string"
+                },
+                "status": {
+                    "enum": [
+                        "queued",
+                        "running",
+                        "finalizing",
+                        "completed",
+                        "failed"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/utils.ArchiveStatus"
+                        }
+                    ]
                 },
                 "streamed_at": {
                     "type": "string"
@@ -6483,6 +7428,38 @@ const docTemplate = `{
                 }
             }
         },
+        "http.StartQueueTaskRequest": {
+            "type": "object",
+            "required": [
+                "queue_id",
+                "task_name"
+            ],
+            "properties": {
+                "continue": {
+                    "type": "boolean"
+                },
+                "queue_id": {
+                    "type": "string"
+                },
+                "task_name": {
+                    "type": "string",
+                    "enum": [
+                        "task_vod_create_folder",
+                        "task_vod_download_thumbnail",
+                        "task_vod_save_info",
+                        "task_video_download",
+                        "task_video_convert",
+                        "task_video_move",
+                        "task_chat_download",
+                        "task_chat_convert",
+                        "task_chat_render",
+                        "task_chat_move",
+                        "task_live_chat_download",
+                        "task_live_video_download"
+                    ]
+                }
+            }
+        },
         "http.StartTaskRequest": {
             "type": "object",
             "required": [
@@ -6604,9 +7581,6 @@ const docTemplate = `{
                 "task_vod_save_info"
             ],
             "properties": {
-                "chat_processing": {
-                    "type": "boolean"
-                },
                 "id": {
                     "type": "string"
                 },
@@ -6614,9 +7588,6 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "on_hold": {
-                    "type": "boolean"
-                },
-                "processing": {
                     "type": "boolean"
                 },
                 "task_chat_convert": {
@@ -6748,9 +7719,6 @@ const docTemplate = `{
                             "$ref": "#/definitions/utils.TaskStatus"
                         }
                     ]
-                },
-                "video_processing": {
-                    "type": "boolean"
                 }
             }
         },
@@ -6770,6 +7738,15 @@ const docTemplate = `{
                 },
                 "vod_id": {
                     "type": "string"
+                }
+            }
+        },
+        "http.UpdateVodNotesRequest": {
+            "type": "object",
+            "properties": {
+                "notes": {
+                    "type": "string",
+                    "maxLength": 10000
                 }
             }
         },
@@ -6793,6 +7770,18 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                },
+                "clip_resolution": {
+                    "type": "string",
+                    "enum": [
+                        "best",
+                        "1440p",
+                        "1080p",
+                        "720p",
+                        "480p",
+                        "360p",
+                        "160p"
+                    ]
                 },
                 "clips_ignore_last_checked": {
                     "type": "boolean"
@@ -6872,6 +7861,221 @@ const docTemplate = `{
                 },
                 "watch_vod": {
                     "type": "boolean"
+                }
+            }
+        },
+        "http.VideoDetails": {
+            "type": "object",
+            "properties": {
+                "caption_path": {
+                    "description": "CaptionPath holds the value of the \"caption_path\" field.",
+                    "type": "string"
+                },
+                "chat_path": {
+                    "description": "ChatPath holds the value of the \"chat_path\" field.",
+                    "type": "string"
+                },
+                "chat_video_path": {
+                    "description": "ChatVideoPath holds the value of the \"chat_video_path\" field.",
+                    "type": "string"
+                },
+                "clip_ext_vod_id": {
+                    "description": "The external VOD ID of a clip. This is only populated if the clip is linked to a video.",
+                    "type": "string"
+                },
+                "clip_vod_offset": {
+                    "description": "The offset in seconds to where the clip starts in the VOD. This is only populdated if the video is a clip.",
+                    "type": "integer"
+                },
+                "created_at": {
+                    "description": "CreatedAt holds the value of the \"created_at\" field.",
+                    "type": "string"
+                },
+                "duration": {
+                    "description": "Duration holds the value of the \"duration\" field.",
+                    "type": "integer"
+                },
+                "edges": {
+                    "description": "Edges holds the relations/edges for other nodes in the graph.\nThe values are being populated by the VodQuery when eager-loading is set.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ent.VodEdges"
+                        }
+                    ]
+                },
+                "ext_id": {
+                    "description": "The ID of the video on the external platform.",
+                    "type": "string"
+                },
+                "ext_stream_id": {
+                    "description": "The ID of the stream on the external platform, if applicable.",
+                    "type": "string"
+                },
+                "file_name": {
+                    "description": "FileName holds the value of the \"file_name\" field.",
+                    "type": "string"
+                },
+                "folder_name": {
+                    "description": "FolderName holds the value of the \"folder_name\" field.",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "ID of the ent.",
+                    "type": "string"
+                },
+                "info_path": {
+                    "description": "InfoPath holds the value of the \"info_path\" field.",
+                    "type": "string"
+                },
+                "live_chat_convert_path": {
+                    "description": "Path to the converted live chat file",
+                    "type": "string"
+                },
+                "live_chat_path": {
+                    "description": "Path to the raw live chat file",
+                    "type": "string"
+                },
+                "live_preview_available": {
+                    "type": "boolean"
+                },
+                "local_views": {
+                    "description": "LocalViews holds the value of the \"local_views\" field.",
+                    "type": "integer"
+                },
+                "locked": {
+                    "description": "Locked holds the value of the \"locked\" field.",
+                    "type": "boolean"
+                },
+                "notes": {
+                    "description": "User notes about why the VOD was kept.",
+                    "type": "string"
+                },
+                "platform": {
+                    "description": "The platform the VOD is from, takes an enum.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/utils.VideoPlatform"
+                        }
+                    ]
+                },
+                "resolution": {
+                    "description": "Resolution holds the value of the \"resolution\" field.",
+                    "type": "string"
+                },
+                "sprite_thumbnails_columns": {
+                    "description": "SpriteThumbnailsColumns holds the value of the \"sprite_thumbnails_columns\" field.",
+                    "type": "integer"
+                },
+                "sprite_thumbnails_enabled": {
+                    "description": "SpriteThumbnailsEnabled holds the value of the \"sprite_thumbnails_enabled\" field.",
+                    "type": "boolean"
+                },
+                "sprite_thumbnails_height": {
+                    "description": "SpriteThumbnailsHeight holds the value of the \"sprite_thumbnails_height\" field.",
+                    "type": "integer"
+                },
+                "sprite_thumbnails_images": {
+                    "description": "SpriteThumbnailsImages holds the value of the \"sprite_thumbnails_images\" field.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "sprite_thumbnails_interval": {
+                    "description": "SpriteThumbnailsInterval holds the value of the \"sprite_thumbnails_interval\" field.",
+                    "type": "integer"
+                },
+                "sprite_thumbnails_rows": {
+                    "description": "SpriteThumbnailsRows holds the value of the \"sprite_thumbnails_rows\" field.",
+                    "type": "integer"
+                },
+                "sprite_thumbnails_width": {
+                    "description": "SpriteThumbnailsWidth holds the value of the \"sprite_thumbnails_width\" field.",
+                    "type": "integer"
+                },
+                "status": {
+                    "description": "Archive processing lifecycle, independent of capture completeness.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/utils.ArchiveStatus"
+                        }
+                    ]
+                },
+                "storage_size_bytes": {
+                    "description": "The size of the VOD in bytes.",
+                    "type": "integer"
+                },
+                "streamed_at": {
+                    "description": "The time the VOD was streamed.",
+                    "type": "string"
+                },
+                "thumbnail_path": {
+                    "description": "ThumbnailPath holds the value of the \"thumbnail_path\" field.",
+                    "type": "string"
+                },
+                "title": {
+                    "description": "Title holds the value of the \"title\" field.",
+                    "type": "string"
+                },
+                "tmp_chat_download_path": {
+                    "description": "The path where the chat is downloaded to",
+                    "type": "string"
+                },
+                "tmp_chat_render_path": {
+                    "description": "The path where the rendered chat is",
+                    "type": "string"
+                },
+                "tmp_live_chat_convert_path": {
+                    "description": "The path where the converted chat is",
+                    "type": "string"
+                },
+                "tmp_live_chat_download_path": {
+                    "description": "The path where the converted chat is",
+                    "type": "string"
+                },
+                "tmp_video_convert_path": {
+                    "description": "The path where the converted video is",
+                    "type": "string"
+                },
+                "tmp_video_download_path": {
+                    "description": "The path where the video is downloaded to",
+                    "type": "string"
+                },
+                "tmp_video_hls_path": {
+                    "description": "The path where the temporary video hls files are",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "The type of VOD, takes an enum.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/utils.VodType"
+                        }
+                    ]
+                },
+                "updated_at": {
+                    "description": "UpdatedAt holds the value of the \"updated_at\" field.",
+                    "type": "string"
+                },
+                "video_hls_path": {
+                    "description": "The path where the video hls files are",
+                    "type": "string"
+                },
+                "video_path": {
+                    "description": "VideoPath holds the value of the \"video_path\" field.",
+                    "type": "string"
+                },
+                "video_start_at": {
+                    "description": "The wall-clock time that video second 0 corresponds to; for live archives it accounts for capture latency and may equal the chat capture start when unresolvable.",
+                    "type": "string"
+                },
+                "views": {
+                    "description": "Views holds the value of the \"views\" field.",
+                    "type": "integer"
+                },
+                "web_thumbnail_path": {
+                    "description": "WebThumbnailPath holds the value of the \"web_thumbnail_path\" field.",
+                    "type": "string"
                 }
             }
         },
@@ -7081,6 +8285,34 @@ const docTemplate = `{
                 }
             }
         },
+        "playback.GetPlayback": {
+            "type": "object",
+            "properties": {
+                "playback": {
+                    "$ref": "#/definitions/ent.Playback"
+                },
+                "vod": {
+                    "$ref": "#/definitions/ent.Vod"
+                }
+            }
+        },
+        "playback.GetPlaybackResp": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/playback.GetPlayback"
+                    }
+                },
+                "playback": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ent.Playback"
+                    }
+                }
+            }
+        },
         "playlistrulegroup.Operator": {
             "type": "string",
             "enum": [
@@ -7092,6 +8324,40 @@ const docTemplate = `{
                 "DefaultOperator",
                 "OperatorAND",
                 "OperatorOR"
+            ]
+        },
+        "queue.RestartResult": {
+            "type": "object",
+            "properties": {
+                "generation": {
+                    "type": "integer"
+                },
+                "job_id": {
+                    "type": "integer"
+                },
+                "older_active_cancelled": {
+                    "type": "boolean"
+                },
+                "task_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "utils.ArchiveStatus": {
+            "type": "string",
+            "enum": [
+                "queued",
+                "running",
+                "finalizing",
+                "completed",
+                "failed"
+            ],
+            "x-enum-varnames": [
+                "ArchiveQueued",
+                "ArchiveRunning",
+                "ArchiveFinalizing",
+                "ArchiveCompleted",
+                "ArchiveFailed"
             ]
         },
         "utils.ErrorResponse": {
@@ -7265,15 +8531,10 @@ const docTemplate = `{
     },
     "securityDefinitions": {
         "ApiKeyAuth": {
-            "description": "Authorization: Bearer \u003capi_key\u003e. Mint a key via the admin UI.",
+            "description": "Programmatic API authentication. Enter ` + "`" + `Bearer gym_{prefix}_{secret}` + "`" + `. Create keys in the admin UI; the complete key is shown only once.",
             "type": "apiKey",
             "name": "Authorization",
             "in": "header"
-        },
-        "ApiKeyCookieAuth": {
-            "type": "apiKey",
-            "name": "access-token",
-            "in": "cookie"
         }
     }
 }`
@@ -7281,15 +8542,15 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:4000",
+	Host:             "",
 	BasePath:         "/api/v1",
-	Schemes:          []string{"https"},
+	Schemes:          []string{},
 	Title:            "Ganymede API",
-	Description:      "Authentication is handled using JWT tokens. The tokens are set as access-token and refresh-token cookies.\nFor information regarding which role is authorized for which endpoint, see the http handler https://github.com/Zibbp/ganymede/blob/main/internal/transport/http/handler.go.",
+	Description:      "Ganymede authenticates programmatic API clients with scoped API keys. Send the complete key in the Authorization header as a Bearer token when API-key authentication is enabled.\nAPI keys are created by an administrator in the web UI and the complete key is shown only once. Keys use resource:tier scopes such as vod:read, vod:write, and *:admin.\nFor interactive browser use, sign in through the web UI or POST /auth/login. This establishes an HTTP-only session cookie that the browser sends automatically with same-origin requests, including requests from this Swagger UI.\nBrowser sessions use the admin > editor > archiver > user role hierarchy. They are not external API credentials and are therefore not entered in the Swagger Authorize dialog.\nOperations marked ApiKeyAuth accept API keys. Browser-only operations, including API-key management and per-user playback state, require an interactive session and do not accept API keys.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
-	LeftDelim:        "{{",
-	RightDelim:       "}}",
+	LeftDelim:        "[[",
+	RightDelim:       "]]",
 }
 
 func init() {

@@ -9,7 +9,7 @@ import { useEffect } from "react";
 import { useTranslations } from "next-intl";
 
 export default function Home() {
-  const { isLoggedIn } = useAuthStore();
+  const { isLoggedIn, hasHydrated } = useAuthStore();
 
   useEffect(() => {
     document.title = "DuckVOD – Twitch-VOD- und Livestream-Archiv mit Chat";
@@ -19,13 +19,14 @@ export default function Home() {
 
   return (
     <div>
-      {!isLoggedIn && (
+      {/* Render neither variant until the auth state is known, otherwise the hero flashes for logged-in users */}
+      {hasHydrated && !isLoggedIn && (
         <Box mb={5}>
           <LandingHero />
         </Box>
       )}
 
-      {isLoggedIn && (
+      {hasHydrated && isLoggedIn && (
         <Box mt="xl">
           <Container size={"7xl"}>
             <Title order={2} className="duck-section-title">{t('continueWatching')}</Title>
@@ -53,9 +54,6 @@ export default function Home() {
           <RecentlyArchived count={8} />
         </Container>
       </Box>
-
-
-
     </div>
   );
 }

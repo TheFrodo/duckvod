@@ -25,8 +25,7 @@ type AdminService interface {
 //	@Produce		json
 //	@Success		200	{object}	admin.GetVideoStatisticsResponse
 //	@Failure		500	{object}	utils.ErrorResponse
-//	@Router			/admin/video/statistics [get]
-//	@Security		ApiKeyCookieAuth
+//	@Router			/admin/video-statistics [get]
 //	@Security		ApiKeyAuth
 func (h *Handler) GetVideoStatistics(c echo.Context) error {
 	resp, err := h.Service.AdminService.GetVideoStatistics(c.Request().Context())
@@ -45,8 +44,7 @@ func (h *Handler) GetVideoStatistics(c echo.Context) error {
 //	@Produce		json
 //	@Success		200	{object}	admin.GetSystemOverviewResponse
 //	@Failure		500	{object}	utils.ErrorResponse
-//	@Router			/admin/system/overview [get]
-//	@Security		ApiKeyCookieAuth
+//	@Router			/admin/system-overview [get]
 //	@Security		ApiKeyAuth
 func (h *Handler) GetSystemOverview(c echo.Context) error {
 	resp, err := h.Service.AdminService.GetSystemOverview(c.Request().Context())
@@ -66,7 +64,6 @@ func (h *Handler) GetSystemOverview(c echo.Context) error {
 //	@Success		200	{object}	admin.GetStorageDistributionResponse
 //	@Failure		500	{object}	utils.ErrorResponse
 //	@Router			/admin/storage-distribution [get]
-//	@Security		ApiKeyCookieAuth
 //	@Security		ApiKeyAuth
 func (h *Handler) GetStorageDistribution(c echo.Context) error {
 	resp, err := h.Service.AdminService.GetStorageDistribution(c.Request().Context())
@@ -86,7 +83,6 @@ func (h *Handler) GetStorageDistribution(c echo.Context) error {
 //	@Success		200	{object}	admin.InfoResp
 //	@Failure		500	{object}	utils.ErrorResponse
 //	@Router			/admin/info [get]
-//	@Security		ApiKeyCookieAuth
 //	@Security		ApiKeyAuth
 func (h *Handler) GetInfo(c echo.Context) error {
 	resp, err := h.Service.AdminService.GetInfo(c.Request().Context())

@@ -1,4 +1,14 @@
 {
+  "ArchiveStatus": {
+    "stopping": "Wird gestoppt…",
+    "livePreviewUnavailable": "Die Live-Vorschau ist noch nicht verfügbar.",
+    "label": "Status",
+    "queued": "Wartend",
+    "running": "Aufnahme",
+    "finalizing": "Wird abgeschlossen",
+    "completed": "Abgeschlossen",
+    "failed": "Fehlgeschlagen"
+  },
   "HomePage": {
     "continueWatching": "Weiter ansehen",
     "recentlyArchived": "Kürzlich archiviert",
@@ -12,7 +22,7 @@
   },
   "VideoPage": {
     "loading": "Video laden",
-    "error": "Fehler beim Laden der Videos"
+    "error": "Fehler beim Laden des Videos"
   },
   "SearchPage": {
     "title": "Suche",
@@ -311,9 +321,7 @@
       "proxyAddButton": "Hinzufügen",
       "proxyTypeLabel": "Wähle den Proxy-Typ",
       "whitelistChannelsLabel": "Whitelist-Kanäle",
-      "whitelistChannelsDescription": "Wähle Kanäle aus, die von der Verwendung des Proxys ausgeschlossen sind, falls aktiviert. Stattdessen wird dein Twitch-Token verwendet. Wähle Kanäle aus, die du abonniert hast.",
-      "watchWhileArchivingLabel": "Aktiviere Wiedergabe während des Archivierens",
-      "watchWhileArchivingDescription": "Lädt einen separaten HLS-Stream herunter, um Live-Streams während des Archivierens ansehen zu können. Dies verdoppelt den Speicherbedarf während der Live-Archivierung. Nur das Video ist abspielbar – der Chat wird nicht mit angezeigt."
+      "whitelistChannelsDescription": "Wähle Kanäle aus, die von der Verwendung des Proxys ausgeschlossen sind, falls aktiviert. Stattdessen wird dein Twitch-Token verwendet. Wähle Kanäle aus, die du abonniert hast."
     },
     "chatSettings": {
       "header": "Chat-Einstellungen",
@@ -633,6 +641,8 @@
     "chatVideoPathLabel": "Chat-Video-Pfad",
     "captionPathLabel": "Untertitel-Pfad",
     "infoPathLabel": "Info-Pfad",
+    "notesLabel": "Notizen",
+    "notesPlaceholder": "Warum wurde dieses VOD aufbewahrt? (Markdown unterstützt)",
     "submitButton": "Video erstellen",
     "editButton": "Video bearbeiten",
     "multiDeleteNotification": "Videos gelöscht",
@@ -676,6 +686,8 @@
     "channelClipsMoreInformationButton": "Weitere Informationen",
     "channelClipsMoreInformationText": "Wenn du einen einmaligen Import der beliebtesten Clips eines Kanals durchführen möchtest, stelle das Intervall auf eine große Zahl (1000) und die Anzahl der Clips auf eine große Zahl (250) ein. Dadurch werden die Top 250 Clips der letzten 1000 Tage importiert. Es wird empfohlen, das Intervall und die Anzahl der Clips nach dem ersten Import auf eine niedrigere Zahl zu ändern.",
     "watchClipsLabel": "Clips überwachen",
+    "clipResolutionLabel": "Clipqualität",
+    "clipResolutionDescription": "Qualität für Clip-Archive. Twitch-Clips haben keine Audio-only-Varianten.",
     "numberOfClipsLabel": "Anzahl der Clips",
     "numberOfClipsDescription": "Anzahl der zu archivierenden Clips.",
     "intervalDaysLabel": "Intervall (Tage)",
@@ -725,7 +737,7 @@
     "registerSuccessNotification": "Erfolgreich registriert, bitte Anmelden",
     "errorRegisteringNotification": "Fehler bei der Registrierung",
     "welcomeText": "Willkommen bei DuckVOD",
-    "ssoButton": "Single Single On (SSO)",
+    "ssoButton": "Single Sign-On (SSO)",
     "localCredentialsLabel": "Oder mit lokalen Anmeldeinformationen fortfahren",
     "usernameLabel": "Benutzername",
     "usernameDescription": "Dein Benutzername",
@@ -755,7 +767,8 @@
     "loading": "Lade Wiedergabelisten",
     "errorLoading": "Fehler beim Laden der Wiedergabelisten",
     "addVideoPlaylistsPlaceholder": "Wähle eine Wiedergabeliste",
-    "addVideoToPlaylistButton": "Füge Video zur Wiedergabeliste hinzu",
+    "searchPlaylistsPlaceholder": "Wiedergabelisten durchsuchen",
+    "noPlaylistsFound": "Keine Wiedergabelisten gefunden",
     "videosAddedToPlaylistNotification": "Videos zur Wiedergabeliste hinzugefügt",
     "notificationError": "Fehler",
     "addVideosToPlaylistButton": "Videos zur Wiedergabeliste hinzufügen",
@@ -802,7 +815,7 @@
     "saveInformationTitle": "Informationen speichern",
     "downloadThumbnailsTitle": "Vorschaubilder herunterladen",
     "externalPlatformVideoIdLabel": "Externe Plattform Video-ID",
-    "GanymedeVideoIdLabel": "DuckVOD Video-ID",
+    "ganymedeVideoIdLabel": "Ganymed Video-ID",
     "streamedAtLabel": "Gestreamt am",
     "taskRestartedNotification": "Aufgabe neu gestartet.",
     "taskRestartText": "Warteschlangenaufgabe {taskName} neu starten?",
@@ -813,6 +826,10 @@
     "videoMoveTitle": "Video verschieben"
   },
   "VideoComponents": {
+    "stopRecording": "Aufnahme stoppen",
+    "stopRecordingDescription": "Diese Aufnahme jetzt stoppen? Das aufgezeichnete Video und der Chat bleiben erhalten und werden verarbeitet.",
+    "stopRecordingNotification": "Stopp angefordert. Die Aufnahme wird jetzt abgeschlossen.",
+    "stopRecordingError": "Die Aufnahme konnte nicht gestoppt werden. Möglicherweise wurde sie bereits beendet. Lade die Seite neu und prüfe den Status.",
     "loadingInformation": "Videoinformationen werden geladen",
     "errorLoadingInformation": "Fehler beim Laden der Videoinformationen",
     "processingOverlayText": "Verarbeitung",
@@ -828,6 +845,22 @@
     "loadingChatHistogram": "Lade Chat-Histogramm",
     "errorLoadingChatHistogram": "Fehler beim Laden des Chat-Histogramms",
     "chatHistogramTitle": "Chat Histogramm",
+    "notesTitle": "Notizen",
+    "notesPlaceholder": "Warum hast du dieses VOD aufbewahrt? Halte besondere Momente hier fest... (Markdown unterstützt)",
+    "notesEmpty": "Noch keine Notizen.",
+    "notesAddButton": "Notizen hinzufügen",
+    "notesEditButton": "Notizen bearbeiten",
+    "notesSaveButton": "Notizen speichern",
+    "notesCancelButton": "Abbrechen",
+    "notesSavedNotification": "Notizen gespeichert",
+    "notesSaveError": "Fehler beim Speichern der Notizen",
+    "notesCharCount": "{count} / {max} Zeichen",
+    "notesMarkdownHint": "Markdown unterstützt",
+    "notesInsertTimestampButton": "Zeitstempel einfügen",
+    "notesTimestampDescriptionPlaceholder": "Beschreibung hinzufügen",
+    "notesJumpToTimestamp": "Im Video zum Zeitstempel springen",
+    "notesPlayerNotReady": "Der Videoplayer ist noch nicht bereit",
+    "notesTooLongError": "Notizen dürfen höchstens {max} Zeichen lang sein",
     "chatTimeSkipDetected": "Zeitsprung erkannt. Chat geleert.",
     "chatPlayerReady": "Chat-Player bereit",
     "chatPlayerReadyStats": "Chat-Wiedergabe enthält {lengthBadges} Badges, {lengthSubBadges} Abonnenten-Badges und {lengthEmotes} Emotes.",
@@ -917,7 +950,26 @@
     "streamedOnTooltip": "Gestreamt am",
     "videoTypeTooltip": "Videotyp",
     "videoClipsTitle": "Video-Clips",
-    "storageSizeTooltip": "Speicherplatz"
+    "storageSizeTooltip": "Speicherplatz",
+    "enums": {
+      "VideoSortBy": {
+        "date": "Datum",
+        "views": "Aufrufe",
+        "local_views": "Lokale Aufrufe",
+        "created": "Erstellt"
+      },
+      "VideoOrder": {
+        "asc": "Aufsteigend",
+        "desc": "Absteigend"
+      },
+      "VideoType": {
+        "archive": "Archiv",
+        "clip": "Clip",
+        "live": "Live",
+        "highlight": "Highlight",
+        "upload": "Hochgeladen"
+      }
+    }
   },
   "MultistreamComponents": {
     "seekBackTooltip": "{seconds} Sekunden zurückspringen",
@@ -941,30 +993,49 @@
   },
   "AdminOverviewPage": {
     "title": "Admin - Übersicht",
-    "loading": "Übersicht wird geladen",
+    "header": "Übersicht",
+    "refresh": "Statistiken aktualisieren",
+    "retry": "Erneut versuchen",
     "error": "Fehler beim Laden der Übersicht",
+    "library": {
+      "title": "Bibliothek",
+      "totalVideos": "Videos insgesamt",
+      "totalChannels": "Kanäle insgesamt",
+      "totalDuration": "Gesamtdauer",
+      "totalViews": "Aufrufe insgesamt",
+      "totalViewsDescription": "Quell- und lokale Aufrufe",
+      "videosPerChannel": "Videos pro Kanal",
+      "videoTypes": "Videotypen",
+      "channel": "Kanal",
+      "videos": "Videos",
+      "otherChannels": "Andere",
+      "noData": "Noch keine Daten",
+      "empty": "Noch keine Videos archiviert."
+    },
+    "storage": {
+      "title": "Speicher",
+      "usedOf": "{used} von {total} verwendet",
+      "free": "{value} frei",
+      "total": "{value} insgesamt",
+      "perChannel": "Speicher pro Kanal",
+      "byType": "Speicher nach Videotyp",
+      "channel": "Kanal",
+      "size": "Größe",
+      "otherChannels": "Andere",
+      "otherTypes": "Andere",
+      "largestVideos": "Größte Videos",
+      "noData": "Noch keine Daten",
+      "noLargeVideos": "Keine Videos gefunden"
+    },
     "system": {
-      "title": "Systemübersicht",
-      "usedStorageText": "Genutzter Speicherplatz",
-      "usedStorageDescription": "Gesamter genutzter Speicherplatz",
-      "availableStorageText": "Verfügbarer Speicherplatz",
-      "availableStorageDescription": "Gesamter verfügbarer Speicherplatz",
-      "storageUsedText": "Speicherplatz genutzt",
-      "cpuCoresText": "CPU-Kerne",
-      "totalMemoryText": "Gesamter Arbeitsspeicher"
-    },
-    "videoStatistics": {
-      "title": "Videostatistiken",
-      "totalVideosText": "Anzahl Videos",
-      "totalChannelsText": "Anzahl Kanäle",
-      "channelVideosMapTitle": "Kanalvideos",
-      "videoTypeMapTitle": "Videotypen"
-    },
-    "storageDistribution": {
-      "title": "Speicherverteilung",
-      "channelStorageDistributionText": "Kanalspeicherverteilung",
-      "topLargeVideosText": "Größte Videos",
-      "noLargeVideosText": "Keine Videos gefunden"
+      "title": "System",
+      "viewInfo": "Systeminformationen anzeigen",
+      "usedStorage": "Verwendeter Speicher",
+      "freeStorage": "{value} frei",
+      "cpuCores": "CPU-Kerne",
+      "totalMemory": "Gesamtspeicher",
+      "users": "Benutzer",
+      "refreshNote": "Die Systemstatistiken werden alle 30 Sekunden automatisch aktualisiert."
     }
   },
   "AdminNotificationsPage": {

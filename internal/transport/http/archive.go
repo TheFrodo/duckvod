@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -34,6 +35,16 @@ type ArchiveVideoRequest struct {
 	RenderChat  bool             `json:"render_chat"`
 }
 
+type ConvertTwitchChatRequest struct {
+	LiveChatPath      string `json:"live_chat_path"`
+	ChannelName       string `json:"channel_name"`
+	VideoID           string `json:"video_id"`
+	VideoExternalID   string `json:"video_external_id"`
+	ChannelID         int    `json:"channel_id"`
+	PreviousVideoID   string `json:"previous_video_id"`
+	FirstMessageEpoch string `json:"first_message_epoch"`
+}
+
 // CheckIDType checks if the provided ID is a video id (numeric) or clip (alphanumeric)
 func CheckIDType(id string) string {
 	// Try to parse as a number
@@ -62,7 +73,6 @@ func CheckIDType(id string) string {
 //	@Failure		400		{object}	utils.ErrorResponse
 //	@Failure		500		{object}	utils.ErrorResponse
 //	@Router			/archive/channel [post]
-//	@Security		ApiKeyCookieAuth
 //	@Security		ApiKeyAuth
 func (h *Handler) ArchiveChannel(c echo.Context) error {
 	body := new(ArchiveChannelRequest)
@@ -89,9 +99,9 @@ func (h *Handler) ArchiveChannel(c echo.Context) error {
 //	@Param			vod	body		ArchiveVideoRequest	true	"Vod"
 //	@Success		200	{object}	archive.TwitchVodResponse
 //	@Failure		400	{object}	utils.ErrorResponse
+//	@Failure		409	{object}	utils.ErrorResponse
 //	@Failure		500	{object}	utils.ErrorResponse
 //	@Router			/archive/video [post]
-//	@Security		ApiKeyCookieAuth
 //	@Security		ApiKeyAuth
 func (h *Handler) ArchiveVideo(c echo.Context) error {
 	body := new(ArchiveVideoRequest)
@@ -126,6 +136,9 @@ func (h *Handler) ArchiveVideo(c echo.Context) error {
 			ArchiveChat: body.ArchiveChat,
 			RenderChat:  body.RenderChat,
 		})
+		if errors.Is(err, archive.ErrActiveLiveArchive) {
+			return ErrorResponse(c, http.StatusConflict, archive.ErrActiveLiveArchive.Error())
+		}
 		if err != nil {
 			return ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		}
@@ -164,18 +177,21 @@ func (h *Handler) ArchiveVideo(c echo.Context) error {
 	return SuccessResponse(c, archiveResponse, "archive started")
 }
 
-// debug route to test converting chat files
+// ConvertTwitchChat godoc
+//
+//	@Summary		Convert twitch live chat file
+//	@Description	Convert a twitch live chat file to TDL chat format (debug route)
+//	@Tags			archive
+//	@Accept			json
+//	@Produce		json
+//	@Param			body	body		ConvertTwitchChatRequest	true	"Convert chat"
+//	@Success		200		{object}	string
+//	@Failure		400		{object}	utils.ErrorResponse
+//	@Failure		500		{object}	utils.ErrorResponse
+//	@Router			/archive/convert-twitch-live-chat [post]
+//	@Security		ApiKeyAuth
 func (h *Handler) ConvertTwitchChat(c echo.Context) error {
-	type Body struct {
-		LiveChatPath      string `json:"live_chat_path"`
-		ChannelName       string `json:"channel_name"`
-		VideoID           string `json:"video_id"`
-		VideoExternalID   string `json:"video_external_id"`
-		ChannelID         int    `json:"channel_id"`
-		PreviousVideoID   string `json:"previous_video_id"`
-		FirstMessageEpoch string `json:"first_message_epoch"`
-	}
-	body := new(Body)
+	body := new(ConvertTwitchChatRequest)
 	if err := c.Bind(body); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -193,7 +209,7 @@ func (h *Handler) ConvertTwitchChat(c echo.Context) error {
 	envConfig := config.GetEnvConfig()
 	outPath := fmt.Sprintf("%s/%s-chat-convert.json", envConfig.TempDir, body.VideoID)
 
-	err = utils.ConvertTwitchLiveChatToTDLChat(body.LiveChatPath, outPath, body.ChannelName, body.VideoID, body.VideoExternalID, body.ChannelID, t, body.PreviousVideoID)
+	err = utils.ConvertTwitchLiveChatToTDLChat(body.LiveChatPath, outPath, body.ChannelName, body.VideoID, body.VideoExternalID, body.ChannelID, t, body.PreviousVideoID, 0)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}

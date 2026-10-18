@@ -36,7 +36,7 @@ type UpdateStatusRequest struct {
 // UpdateProgress godoc
 //
 //	@Summary		Update progress
-//	@Description	Update playback progress
+//	@Description	Update playback progress for the current user. Requires an interactive browser session; API keys are not accepted.
 //	@Tags			Playback
 //	@Accept			json
 //	@Produce		json
@@ -45,7 +45,6 @@ type UpdateStatusRequest struct {
 //	@Failure		400			{object}	utils.ErrorResponse
 //	@Failure		500			{object}	utils.ErrorResponse
 //	@Router			/playback/progress [post]
-//	@Security		ApiKeyCookieAuth
 func (h *Handler) UpdateProgress(c echo.Context) error {
 	user := userFromContext(c)
 	upr := new(UpdateProgressRequest)
@@ -69,7 +68,7 @@ func (h *Handler) UpdateProgress(c echo.Context) error {
 // GetProgress godoc
 //
 //	@Summary		Get progress
-//	@Description	Get playback progress
+//	@Description	Get playback progress for the current user. Requires an interactive browser session; API keys are not accepted.
 //	@Tags			Playback
 //	@Accept			json
 //	@Produce		json
@@ -77,8 +76,7 @@ func (h *Handler) UpdateProgress(c echo.Context) error {
 //	@Success		200	{object}	ent.Playback
 //	@Failure		400	{object}	utils.ErrorResponse
 //	@Failure		500	{object}	utils.ErrorResponse
-//	@Router			/playback/progress/{id} [get]
-//	@Security		ApiKeyCookieAuth
+//	@Router			/playback/{id} [get]
 func (h *Handler) GetProgress(c echo.Context) error {
 	user := userFromContext(c)
 	vID, err := uuid.Parse(c.Param("id"))
@@ -99,14 +97,13 @@ func (h *Handler) GetProgress(c echo.Context) error {
 // GetAllProgress godoc
 //
 //	@Summary		Get all progress
-//	@Description	Get all playback progress
+//	@Description	Get all playback progress for the current user. Requires an interactive browser session; API keys are not accepted.
 //	@Tags			Playback
 //	@Accept			json
 //	@Produce		json
 //	@Success		200	{object}	[]ent.Playback
 //	@Failure		500	{object}	utils.ErrorResponse
 //	@Router			/playback [get]
-//	@Security		ApiKeyCookieAuth
 func (h *Handler) GetAllProgress(c echo.Context) error {
 	user := userFromContext(c)
 	playbackEntries, err := h.Service.PlaybackService.GetAllProgress(c.Request().Context(), user.ID)
@@ -119,7 +116,7 @@ func (h *Handler) GetAllProgress(c echo.Context) error {
 // UpdateStatus godoc
 //
 //	@Summary		Update status
-//	@Description	Update playback status
+//	@Description	Update playback status for the current user. Requires an interactive browser session; API keys are not accepted.
 //	@Tags			Playback
 //	@Accept			json
 //	@Produce		json
@@ -128,7 +125,6 @@ func (h *Handler) GetAllProgress(c echo.Context) error {
 //	@Failure		400		{object}	utils.ErrorResponse
 //	@Failure		500		{object}	utils.ErrorResponse
 //	@Router			/playback/status [post]
-//	@Security		ApiKeyCookieAuth
 func (h *Handler) UpdateStatus(c echo.Context) error {
 	user := userFromContext(c)
 	usr := new(UpdateStatusRequest)
@@ -153,7 +149,7 @@ func (h *Handler) UpdateStatus(c echo.Context) error {
 // DeleteProgress godoc
 //
 //	@Summary		Delete progress
-//	@Description	Delete playback progress
+//	@Description	Delete playback progress for the current user. Requires an interactive browser session; API keys are not accepted.
 //	@Tags			Playback
 //	@Accept			json
 //	@Produce		json
@@ -162,7 +158,6 @@ func (h *Handler) UpdateStatus(c echo.Context) error {
 //	@Failure		400	{object}	utils.ErrorResponse
 //	@Failure		500	{object}	utils.ErrorResponse
 //	@Router			/playback/{id} [delete]
-//	@Security		ApiKeyCookieAuth
 func (h *Handler) DeleteProgress(c echo.Context) error {
 	user := userFromContext(c)
 	vID, err := uuid.Parse(c.Param("id"))
@@ -177,9 +172,25 @@ func (h *Handler) DeleteProgress(c echo.Context) error {
 	return SuccessResponse(c, "", "ok")
 }
 
+// GetLastPlaybacks godoc
+//
+//	@Summary		Get last playbacks
+//	@Description	Get the latest playback entries for the current user. Requires an interactive browser session; API keys are not accepted.
+//	@Tags			Playback
+//	@Accept			json
+//	@Produce		json
+//	@Param			limit	query		integer	false	"Limit"	default(10)
+//	@Success		200		{object}	playback.GetPlaybackResp
+//	@Failure		400		{object}	utils.ErrorResponse
+//	@Failure		500		{object}	utils.ErrorResponse
+//	@Router			/playback/last [get]
 func (h *Handler) GetLastPlaybacks(c echo.Context) error {
 	user := userFromContext(c)
-	limit, err := strconv.Atoi(c.QueryParam("limit"))
+	limitParam := c.QueryParam("limit")
+	if limitParam == "" {
+		limitParam = "10"
+	}
+	limit, err := strconv.Atoi(limitParam)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid limit")
 	}
@@ -199,10 +210,10 @@ func (h *Handler) GetLastPlaybacks(c echo.Context) error {
 //	@Tags			Playback
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path		string	true	"vod id"
-//	@Success		200	{object}	string
-//	@Failure		400	{object}	utils.ErrorResponse
-//	@Failure		500	{object}	utils.ErrorResponse
+//	@Param			video_id	query		string	true	"vod id"
+//	@Success		200			{object}	string
+//	@Failure		400			{object}	utils.ErrorResponse
+//	@Failure		500			{object}	utils.ErrorResponse
 //	@Router			/playback/start [post]
 func (h *Handler) StartPlayback(c echo.Context) error {
 	videoId, err := uuid.Parse(c.QueryParam("video_id"))

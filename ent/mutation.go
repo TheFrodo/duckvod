@@ -3142,6 +3142,7 @@ type LiveMutation struct {
 	archive_chat               *bool
 	resolution                 *string
 	vod_resolution             *string
+	clip_resolution            *string
 	last_live                  *time.Time
 	render_chat                *bool
 	video_age                  *int64
@@ -3662,6 +3663,55 @@ func (m *LiveMutation) VodResolutionCleared() bool {
 func (m *LiveMutation) ResetVodResolution() {
 	m.vod_resolution = nil
 	delete(m.clearedFields, live.FieldVodResolution)
+}
+
+// SetClipResolution sets the "clip_resolution" field.
+func (m *LiveMutation) SetClipResolution(s string) {
+	m.clip_resolution = &s
+}
+
+// ClipResolution returns the value of the "clip_resolution" field in the mutation.
+func (m *LiveMutation) ClipResolution() (r string, exists bool) {
+	v := m.clip_resolution
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldClipResolution returns the old "clip_resolution" field's value of the Live entity.
+// If the Live object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LiveMutation) OldClipResolution(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldClipResolution is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldClipResolution requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldClipResolution: %w", err)
+	}
+	return oldValue.ClipResolution, nil
+}
+
+// ClearClipResolution clears the value of the "clip_resolution" field.
+func (m *LiveMutation) ClearClipResolution() {
+	m.clip_resolution = nil
+	m.clearedFields[live.FieldClipResolution] = struct{}{}
+}
+
+// ClipResolutionCleared returns if the "clip_resolution" field was cleared in this mutation.
+func (m *LiveMutation) ClipResolutionCleared() bool {
+	_, ok := m.clearedFields[live.FieldClipResolution]
+	return ok
+}
+
+// ResetClipResolution resets all changes to the "clip_resolution" field.
+func (m *LiveMutation) ResetClipResolution() {
+	m.clip_resolution = nil
+	delete(m.clearedFields, live.FieldClipResolution)
 }
 
 // SetLastLive sets the "last_live" field.
@@ -4442,7 +4492,7 @@ func (m *LiveMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *LiveMutation) Fields() []string {
-	fields := make([]string, 0, 24)
+	fields := make([]string, 0, 25)
 	if m.watch_live != nil {
 		fields = append(fields, live.FieldWatchLive)
 	}
@@ -4472,6 +4522,9 @@ func (m *LiveMutation) Fields() []string {
 	}
 	if m.vod_resolution != nil {
 		fields = append(fields, live.FieldVodResolution)
+	}
+	if m.clip_resolution != nil {
+		fields = append(fields, live.FieldClipResolution)
 	}
 	if m.last_live != nil {
 		fields = append(fields, live.FieldLastLive)
@@ -4543,6 +4596,8 @@ func (m *LiveMutation) Field(name string) (ent.Value, bool) {
 		return m.Resolution()
 	case live.FieldVodResolution:
 		return m.VodResolution()
+	case live.FieldClipResolution:
+		return m.ClipResolution()
 	case live.FieldLastLive:
 		return m.LastLive()
 	case live.FieldRenderChat:
@@ -4600,6 +4655,8 @@ func (m *LiveMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldResolution(ctx)
 	case live.FieldVodResolution:
 		return m.OldVodResolution(ctx)
+	case live.FieldClipResolution:
+		return m.OldClipResolution(ctx)
 	case live.FieldLastLive:
 		return m.OldLastLive(ctx)
 	case live.FieldRenderChat:
@@ -4706,6 +4763,13 @@ func (m *LiveMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetVodResolution(v)
+		return nil
+	case live.FieldClipResolution:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetClipResolution(v)
 		return nil
 	case live.FieldLastLive:
 		v, ok := value.(time.Time)
@@ -4892,6 +4956,9 @@ func (m *LiveMutation) ClearedFields() []string {
 	if m.FieldCleared(live.FieldVodResolution) {
 		fields = append(fields, live.FieldVodResolution)
 	}
+	if m.FieldCleared(live.FieldClipResolution) {
+		fields = append(fields, live.FieldClipResolution)
+	}
 	if m.FieldCleared(live.FieldClipsLastChecked) {
 		fields = append(fields, live.FieldClipsLastChecked)
 	}
@@ -4914,6 +4981,9 @@ func (m *LiveMutation) ClearField(name string) error {
 		return nil
 	case live.FieldVodResolution:
 		m.ClearVodResolution()
+		return nil
+	case live.FieldClipResolution:
+		m.ClearClipResolution()
 		return nil
 	case live.FieldClipsLastChecked:
 		m.ClearClipsLastChecked()
@@ -4955,6 +5025,9 @@ func (m *LiveMutation) ResetField(name string) error {
 		return nil
 	case live.FieldVodResolution:
 		m.ResetVodResolution()
+		return nil
+	case live.FieldClipResolution:
+		m.ResetClipResolution()
 		return nil
 	case live.FieldLastLive:
 		m.ResetLastLive()
@@ -11272,9 +11345,6 @@ type QueueMutation struct {
 	id                          *uuid.UUID
 	live_archive                *bool
 	on_hold                     *bool
-	video_processing            *bool
-	chat_processing             *bool
-	processing                  *bool
 	task_vod_create_folder      *utils.TaskStatus
 	task_vod_download_thumbnail *utils.TaskStatus
 	task_vod_save_info          *utils.TaskStatus
@@ -11474,114 +11544,6 @@ func (m *QueueMutation) OldOnHold(ctx context.Context) (v bool, err error) {
 // ResetOnHold resets all changes to the "on_hold" field.
 func (m *QueueMutation) ResetOnHold() {
 	m.on_hold = nil
-}
-
-// SetVideoProcessing sets the "video_processing" field.
-func (m *QueueMutation) SetVideoProcessing(b bool) {
-	m.video_processing = &b
-}
-
-// VideoProcessing returns the value of the "video_processing" field in the mutation.
-func (m *QueueMutation) VideoProcessing() (r bool, exists bool) {
-	v := m.video_processing
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldVideoProcessing returns the old "video_processing" field's value of the Queue entity.
-// If the Queue object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *QueueMutation) OldVideoProcessing(ctx context.Context) (v bool, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldVideoProcessing is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldVideoProcessing requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldVideoProcessing: %w", err)
-	}
-	return oldValue.VideoProcessing, nil
-}
-
-// ResetVideoProcessing resets all changes to the "video_processing" field.
-func (m *QueueMutation) ResetVideoProcessing() {
-	m.video_processing = nil
-}
-
-// SetChatProcessing sets the "chat_processing" field.
-func (m *QueueMutation) SetChatProcessing(b bool) {
-	m.chat_processing = &b
-}
-
-// ChatProcessing returns the value of the "chat_processing" field in the mutation.
-func (m *QueueMutation) ChatProcessing() (r bool, exists bool) {
-	v := m.chat_processing
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldChatProcessing returns the old "chat_processing" field's value of the Queue entity.
-// If the Queue object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *QueueMutation) OldChatProcessing(ctx context.Context) (v bool, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldChatProcessing is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldChatProcessing requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldChatProcessing: %w", err)
-	}
-	return oldValue.ChatProcessing, nil
-}
-
-// ResetChatProcessing resets all changes to the "chat_processing" field.
-func (m *QueueMutation) ResetChatProcessing() {
-	m.chat_processing = nil
-}
-
-// SetProcessing sets the "processing" field.
-func (m *QueueMutation) SetProcessing(b bool) {
-	m.processing = &b
-}
-
-// Processing returns the value of the "processing" field in the mutation.
-func (m *QueueMutation) Processing() (r bool, exists bool) {
-	v := m.processing
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldProcessing returns the old "processing" field's value of the Queue entity.
-// If the Queue object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *QueueMutation) OldProcessing(ctx context.Context) (v bool, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProcessing is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProcessing requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProcessing: %w", err)
-	}
-	return oldValue.Processing, nil
-}
-
-// ResetProcessing resets all changes to the "processing" field.
-func (m *QueueMutation) ResetProcessing() {
-	m.processing = nil
 }
 
 // SetTaskVodCreateFolder sets the "task_vod_create_folder" field.
@@ -12464,21 +12426,12 @@ func (m *QueueMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *QueueMutation) Fields() []string {
-	fields := make([]string, 0, 22)
+	fields := make([]string, 0, 19)
 	if m.live_archive != nil {
 		fields = append(fields, queue.FieldLiveArchive)
 	}
 	if m.on_hold != nil {
 		fields = append(fields, queue.FieldOnHold)
-	}
-	if m.video_processing != nil {
-		fields = append(fields, queue.FieldVideoProcessing)
-	}
-	if m.chat_processing != nil {
-		fields = append(fields, queue.FieldChatProcessing)
-	}
-	if m.processing != nil {
-		fields = append(fields, queue.FieldProcessing)
 	}
 	if m.task_vod_create_folder != nil {
 		fields = append(fields, queue.FieldTaskVodCreateFolder)
@@ -12543,12 +12496,6 @@ func (m *QueueMutation) Field(name string) (ent.Value, bool) {
 		return m.LiveArchive()
 	case queue.FieldOnHold:
 		return m.OnHold()
-	case queue.FieldVideoProcessing:
-		return m.VideoProcessing()
-	case queue.FieldChatProcessing:
-		return m.ChatProcessing()
-	case queue.FieldProcessing:
-		return m.Processing()
 	case queue.FieldTaskVodCreateFolder:
 		return m.TaskVodCreateFolder()
 	case queue.FieldTaskVodDownloadThumbnail:
@@ -12596,12 +12543,6 @@ func (m *QueueMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldLiveArchive(ctx)
 	case queue.FieldOnHold:
 		return m.OldOnHold(ctx)
-	case queue.FieldVideoProcessing:
-		return m.OldVideoProcessing(ctx)
-	case queue.FieldChatProcessing:
-		return m.OldChatProcessing(ctx)
-	case queue.FieldProcessing:
-		return m.OldProcessing(ctx)
 	case queue.FieldTaskVodCreateFolder:
 		return m.OldTaskVodCreateFolder(ctx)
 	case queue.FieldTaskVodDownloadThumbnail:
@@ -12658,27 +12599,6 @@ func (m *QueueMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetOnHold(v)
-		return nil
-	case queue.FieldVideoProcessing:
-		v, ok := value.(bool)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetVideoProcessing(v)
-		return nil
-	case queue.FieldChatProcessing:
-		v, ok := value.(bool)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetChatProcessing(v)
-		return nil
-	case queue.FieldProcessing:
-		v, ok := value.(bool)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetProcessing(v)
 		return nil
 	case queue.FieldTaskVodCreateFolder:
 		v, ok := value.(utils.TaskStatus)
@@ -12946,15 +12866,6 @@ func (m *QueueMutation) ResetField(name string) error {
 		return nil
 	case queue.FieldOnHold:
 		m.ResetOnHold()
-		return nil
-	case queue.FieldVideoProcessing:
-		m.ResetVideoProcessing()
-		return nil
-	case queue.FieldChatProcessing:
-		m.ResetChatProcessing()
-		return nil
-	case queue.FieldProcessing:
-		m.ResetProcessing()
 		return nil
 	case queue.FieldTaskVodCreateFolder:
 		m.ResetTaskVodCreateFolder()
@@ -14897,7 +14808,7 @@ type VodMutation struct {
 	views                          *int
 	addviews                       *int
 	resolution                     *string
-	processing                     *bool
+	status                         *utils.ArchiveStatus
 	thumbnail_path                 *string
 	web_thumbnail_path             *string
 	video_path                     *string
@@ -14918,6 +14829,7 @@ type VodMutation struct {
 	tmp_chat_render_path           *string
 	tmp_video_hls_path             *string
 	locked                         *bool
+	notes                          *string
 	local_views                    *int
 	addlocal_views                 *int
 	sprite_thumbnails_enabled      *bool
@@ -14936,6 +14848,7 @@ type VodMutation struct {
 	storage_size_bytes             *int64
 	addstorage_size_bytes          *int64
 	streamed_at                    *time.Time
+	video_start_at                 *time.Time
 	updated_at                     *time.Time
 	created_at                     *time.Time
 	clearedFields                  map[string]struct{}
@@ -15537,40 +15450,40 @@ func (m *VodMutation) ResetResolution() {
 	delete(m.clearedFields, vod.FieldResolution)
 }
 
-// SetProcessing sets the "processing" field.
-func (m *VodMutation) SetProcessing(b bool) {
-	m.processing = &b
+// SetStatus sets the "status" field.
+func (m *VodMutation) SetStatus(us utils.ArchiveStatus) {
+	m.status = &us
 }
 
-// Processing returns the value of the "processing" field in the mutation.
-func (m *VodMutation) Processing() (r bool, exists bool) {
-	v := m.processing
+// Status returns the value of the "status" field in the mutation.
+func (m *VodMutation) Status() (r utils.ArchiveStatus, exists bool) {
+	v := m.status
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldProcessing returns the old "processing" field's value of the Vod entity.
+// OldStatus returns the old "status" field's value of the Vod entity.
 // If the Vod object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *VodMutation) OldProcessing(ctx context.Context) (v bool, err error) {
+func (m *VodMutation) OldStatus(ctx context.Context) (v utils.ArchiveStatus, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProcessing is only allowed on UpdateOne operations")
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProcessing requires an ID field in the mutation")
+		return v, errors.New("OldStatus requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProcessing: %w", err)
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
 	}
-	return oldValue.Processing, nil
+	return oldValue.Status, nil
 }
 
-// ResetProcessing resets all changes to the "processing" field.
-func (m *VodMutation) ResetProcessing() {
-	m.processing = nil
+// ResetStatus resets all changes to the "status" field.
+func (m *VodMutation) ResetStatus() {
+	m.status = nil
 }
 
 // SetThumbnailPath sets the "thumbnail_path" field.
@@ -16514,6 +16427,55 @@ func (m *VodMutation) ResetLocked() {
 	m.locked = nil
 }
 
+// SetNotes sets the "notes" field.
+func (m *VodMutation) SetNotes(s string) {
+	m.notes = &s
+}
+
+// Notes returns the value of the "notes" field in the mutation.
+func (m *VodMutation) Notes() (r string, exists bool) {
+	v := m.notes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNotes returns the old "notes" field's value of the Vod entity.
+// If the Vod object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VodMutation) OldNotes(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNotes is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNotes requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNotes: %w", err)
+	}
+	return oldValue.Notes, nil
+}
+
+// ClearNotes clears the value of the "notes" field.
+func (m *VodMutation) ClearNotes() {
+	m.notes = nil
+	m.clearedFields[vod.FieldNotes] = struct{}{}
+}
+
+// NotesCleared returns if the "notes" field was cleared in this mutation.
+func (m *VodMutation) NotesCleared() bool {
+	_, ok := m.clearedFields[vod.FieldNotes]
+	return ok
+}
+
+// ResetNotes resets all changes to the "notes" field.
+func (m *VodMutation) ResetNotes() {
+	m.notes = nil
+	delete(m.clearedFields, vod.FieldNotes)
+}
+
 // SetLocalViews sets the "local_views" field.
 func (m *VodMutation) SetLocalViews(i int) {
 	m.local_views = &i
@@ -17113,6 +17075,55 @@ func (m *VodMutation) ResetStreamedAt() {
 	m.streamed_at = nil
 }
 
+// SetVideoStartAt sets the "video_start_at" field.
+func (m *VodMutation) SetVideoStartAt(t time.Time) {
+	m.video_start_at = &t
+}
+
+// VideoStartAt returns the value of the "video_start_at" field in the mutation.
+func (m *VodMutation) VideoStartAt() (r time.Time, exists bool) {
+	v := m.video_start_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldVideoStartAt returns the old "video_start_at" field's value of the Vod entity.
+// If the Vod object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VodMutation) OldVideoStartAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldVideoStartAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldVideoStartAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldVideoStartAt: %w", err)
+	}
+	return oldValue.VideoStartAt, nil
+}
+
+// ClearVideoStartAt clears the value of the "video_start_at" field.
+func (m *VodMutation) ClearVideoStartAt() {
+	m.video_start_at = nil
+	m.clearedFields[vod.FieldVideoStartAt] = struct{}{}
+}
+
+// VideoStartAtCleared returns if the "video_start_at" field was cleared in this mutation.
+func (m *VodMutation) VideoStartAtCleared() bool {
+	_, ok := m.clearedFields[vod.FieldVideoStartAt]
+	return ok
+}
+
+// ResetVideoStartAt resets all changes to the "video_start_at" field.
+func (m *VodMutation) ResetVideoStartAt() {
+	m.video_start_at = nil
+	delete(m.clearedFields, vod.FieldVideoStartAt)
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (m *VodMutation) SetUpdatedAt(t time.Time) {
 	m.updated_at = &t
@@ -17513,7 +17524,7 @@ func (m *VodMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *VodMutation) Fields() []string {
-	fields := make([]string, 0, 43)
+	fields := make([]string, 0, 45)
 	if m.ext_id != nil {
 		fields = append(fields, vod.FieldExtID)
 	}
@@ -17544,8 +17555,8 @@ func (m *VodMutation) Fields() []string {
 	if m.resolution != nil {
 		fields = append(fields, vod.FieldResolution)
 	}
-	if m.processing != nil {
-		fields = append(fields, vod.FieldProcessing)
+	if m.status != nil {
+		fields = append(fields, vod.FieldStatus)
 	}
 	if m.thumbnail_path != nil {
 		fields = append(fields, vod.FieldThumbnailPath)
@@ -17607,6 +17618,9 @@ func (m *VodMutation) Fields() []string {
 	if m.locked != nil {
 		fields = append(fields, vod.FieldLocked)
 	}
+	if m.notes != nil {
+		fields = append(fields, vod.FieldNotes)
+	}
 	if m.local_views != nil {
 		fields = append(fields, vod.FieldLocalViews)
 	}
@@ -17636,6 +17650,9 @@ func (m *VodMutation) Fields() []string {
 	}
 	if m.streamed_at != nil {
 		fields = append(fields, vod.FieldStreamedAt)
+	}
+	if m.video_start_at != nil {
+		fields = append(fields, vod.FieldVideoStartAt)
 	}
 	if m.updated_at != nil {
 		fields = append(fields, vod.FieldUpdatedAt)
@@ -17671,8 +17688,8 @@ func (m *VodMutation) Field(name string) (ent.Value, bool) {
 		return m.Views()
 	case vod.FieldResolution:
 		return m.Resolution()
-	case vod.FieldProcessing:
-		return m.Processing()
+	case vod.FieldStatus:
+		return m.Status()
 	case vod.FieldThumbnailPath:
 		return m.ThumbnailPath()
 	case vod.FieldWebThumbnailPath:
@@ -17713,6 +17730,8 @@ func (m *VodMutation) Field(name string) (ent.Value, bool) {
 		return m.TmpVideoHlsPath()
 	case vod.FieldLocked:
 		return m.Locked()
+	case vod.FieldNotes:
+		return m.Notes()
 	case vod.FieldLocalViews:
 		return m.LocalViews()
 	case vod.FieldSpriteThumbnailsEnabled:
@@ -17733,6 +17752,8 @@ func (m *VodMutation) Field(name string) (ent.Value, bool) {
 		return m.StorageSizeBytes()
 	case vod.FieldStreamedAt:
 		return m.StreamedAt()
+	case vod.FieldVideoStartAt:
+		return m.VideoStartAt()
 	case vod.FieldUpdatedAt:
 		return m.UpdatedAt()
 	case vod.FieldCreatedAt:
@@ -17766,8 +17787,8 @@ func (m *VodMutation) OldField(ctx context.Context, name string) (ent.Value, err
 		return m.OldViews(ctx)
 	case vod.FieldResolution:
 		return m.OldResolution(ctx)
-	case vod.FieldProcessing:
-		return m.OldProcessing(ctx)
+	case vod.FieldStatus:
+		return m.OldStatus(ctx)
 	case vod.FieldThumbnailPath:
 		return m.OldThumbnailPath(ctx)
 	case vod.FieldWebThumbnailPath:
@@ -17808,6 +17829,8 @@ func (m *VodMutation) OldField(ctx context.Context, name string) (ent.Value, err
 		return m.OldTmpVideoHlsPath(ctx)
 	case vod.FieldLocked:
 		return m.OldLocked(ctx)
+	case vod.FieldNotes:
+		return m.OldNotes(ctx)
 	case vod.FieldLocalViews:
 		return m.OldLocalViews(ctx)
 	case vod.FieldSpriteThumbnailsEnabled:
@@ -17828,6 +17851,8 @@ func (m *VodMutation) OldField(ctx context.Context, name string) (ent.Value, err
 		return m.OldStorageSizeBytes(ctx)
 	case vod.FieldStreamedAt:
 		return m.OldStreamedAt(ctx)
+	case vod.FieldVideoStartAt:
+		return m.OldVideoStartAt(ctx)
 	case vod.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
 	case vod.FieldCreatedAt:
@@ -17911,12 +17936,12 @@ func (m *VodMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetResolution(v)
 		return nil
-	case vod.FieldProcessing:
-		v, ok := value.(bool)
+	case vod.FieldStatus:
+		v, ok := value.(utils.ArchiveStatus)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetProcessing(v)
+		m.SetStatus(v)
 		return nil
 	case vod.FieldThumbnailPath:
 		v, ok := value.(string)
@@ -18058,6 +18083,13 @@ func (m *VodMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetLocked(v)
 		return nil
+	case vod.FieldNotes:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNotes(v)
+		return nil
 	case vod.FieldLocalViews:
 		v, ok := value.(int)
 		if !ok {
@@ -18127,6 +18159,13 @@ func (m *VodMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetStreamedAt(v)
+		return nil
+	case vod.FieldVideoStartAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetVideoStartAt(v)
 		return nil
 	case vod.FieldUpdatedAt:
 		v, ok := value.(time.Time)
@@ -18358,6 +18397,9 @@ func (m *VodMutation) ClearedFields() []string {
 	if m.FieldCleared(vod.FieldTmpVideoHlsPath) {
 		fields = append(fields, vod.FieldTmpVideoHlsPath)
 	}
+	if m.FieldCleared(vod.FieldNotes) {
+		fields = append(fields, vod.FieldNotes)
+	}
 	if m.FieldCleared(vod.FieldSpriteThumbnailsImages) {
 		fields = append(fields, vod.FieldSpriteThumbnailsImages)
 	}
@@ -18375,6 +18417,9 @@ func (m *VodMutation) ClearedFields() []string {
 	}
 	if m.FieldCleared(vod.FieldSpriteThumbnailsColumns) {
 		fields = append(fields, vod.FieldSpriteThumbnailsColumns)
+	}
+	if m.FieldCleared(vod.FieldVideoStartAt) {
+		fields = append(fields, vod.FieldVideoStartAt)
 	}
 	return fields
 }
@@ -18453,6 +18498,9 @@ func (m *VodMutation) ClearField(name string) error {
 	case vod.FieldTmpVideoHlsPath:
 		m.ClearTmpVideoHlsPath()
 		return nil
+	case vod.FieldNotes:
+		m.ClearNotes()
+		return nil
 	case vod.FieldSpriteThumbnailsImages:
 		m.ClearSpriteThumbnailsImages()
 		return nil
@@ -18470,6 +18518,9 @@ func (m *VodMutation) ClearField(name string) error {
 		return nil
 	case vod.FieldSpriteThumbnailsColumns:
 		m.ClearSpriteThumbnailsColumns()
+		return nil
+	case vod.FieldVideoStartAt:
+		m.ClearVideoStartAt()
 		return nil
 	}
 	return fmt.Errorf("unknown Vod nullable field %s", name)
@@ -18509,8 +18560,8 @@ func (m *VodMutation) ResetField(name string) error {
 	case vod.FieldResolution:
 		m.ResetResolution()
 		return nil
-	case vod.FieldProcessing:
-		m.ResetProcessing()
+	case vod.FieldStatus:
+		m.ResetStatus()
 		return nil
 	case vod.FieldThumbnailPath:
 		m.ResetThumbnailPath()
@@ -18572,6 +18623,9 @@ func (m *VodMutation) ResetField(name string) error {
 	case vod.FieldLocked:
 		m.ResetLocked()
 		return nil
+	case vod.FieldNotes:
+		m.ResetNotes()
+		return nil
 	case vod.FieldLocalViews:
 		m.ResetLocalViews()
 		return nil
@@ -18601,6 +18655,9 @@ func (m *VodMutation) ResetField(name string) error {
 		return nil
 	case vod.FieldStreamedAt:
 		m.ResetStreamedAt()
+		return nil
+	case vod.FieldVideoStartAt:
+		m.ResetVideoStartAt()
 		return nil
 	case vod.FieldUpdatedAt:
 		m.ResetUpdatedAt()
