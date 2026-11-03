@@ -10,14 +10,15 @@ import { Footer } from './layout/Footer';
 import useSettingsStore from './store/useSettingsStore';
 import { useEffect } from 'react';
 import useAuthStore from './store/useAuthStore'
-import localFont from 'next/font/local'
-import { Outfit, JetBrains_Mono } from 'next/font/google'
-const localInterFont = localFont({
-  src: "./Inter-Variable.ttf"
-})
-const headingFont = Outfit({
+import { Fredoka, Nunito, JetBrains_Mono } from 'next/font/google'
+// fonts match the DuckSquad website (ducksquad.de)
+const headingFont = Fredoka({
   subsets: ["latin"],
-  weight: ["500", "600", "700", "800"],
+  weight: ["500", "600", "700"],
+})
+const bodyFont = Nunito({
+  subsets: ["latin"],
+  weight: ["400", "600", "700", "800"],
 })
 const monoFont = JetBrains_Mono({
   subsets: ["latin"],
@@ -40,7 +41,7 @@ const CONTAINER_SIZES: Record<string, string> = {
 };
 
 const theme = createTheme({
-  fontFamily: localInterFont.style.fontFamily,
+  fontFamily: bodyFont.style.fontFamily,
   fontFamilyMonospace: monoFont.style.fontFamily,
   headings: {
     fontFamily: headingFont.style.fontFamily,
@@ -48,9 +49,11 @@ const theme = createTheme({
   },
   primaryColor: "duck",
   primaryShade: { light: 6, dark: 5 },
-  defaultRadius: "md",
+  // dark text on the yellow primary color
+  autoContrast: true,
+  defaultRadius: "lg",
   cursorType: "pointer",
-  defaultGradient: { from: "duck.5", to: "mint.5", deg: 120 },
+  defaultGradient: { from: "duck.5", to: "beak.5", deg: 120 },
   breakpoints: {
     xs: "30em",
     sm: "48em",
@@ -77,44 +80,57 @@ const theme = createTheme({
     }),
   },
   colors: {
-    // violet-indigo primary
+    // DuckSquad duck yellow (primary)
     duck: [
-      '#f1eeff',
-      '#e0dafe',
-      '#c0b3fb',
-      '#9e8af8',
-      '#8267f6',
-      '#7152f5',
-      '#6746f4',
-      '#5738da',
-      '#4c31c3',
-      '#4027ac',
+      '#fff8e1',
+      '#ffefc0',
+      '#ffe9a8',
+      '#ffdd7a',
+      '#ffd255',
+      '#ffc83d',
+      '#f5b81f',
+      '#dda10f',
+      '#c48b00',
+      '#a87600',
     ],
-    // mint accent
-    mint: [
-      '#e3fcf6',
-      '#d0f6ec',
-      '#a3ecd8',
-      '#72e2c3',
-      '#4ad9b1',
-      '#31d4a6',
-      '#20d1a0',
-      '#0db98b',
-      '#00a47b',
-      '#008e69',
+    // DuckSquad beak orange
+    beak: [
+      '#fff1e6',
+      '#ffdcc2',
+      '#ffc299',
+      '#ffa86f',
+      '#ff9d5c',
+      '#ff8a3d',
+      '#f2761f',
+      '#e2621c',
+      '#c45212',
+      '#a3430c',
     ],
-    // dark surfaces with a slight violet tint
+    // DuckSquad pool cyan
+    pool: [
+      '#e6fbfe',
+      '#c9f4fb',
+      '#a2ecf7',
+      '#7fe3f3',
+      '#62d8ee',
+      '#5fdcf0',
+      '#38c4dd',
+      '#1ea6c2',
+      '#128aa8',
+      '#0b6f88',
+    ],
+    // DuckSquad dark surfaces (night pond)
     dark: [
-      '#c9c7d6',
-      '#a9a6bb',
-      '#8c89a1',
-      '#5f5c75',
-      '#3a3850',
-      '#2b2a3d',
-      '#1d1c2b',
-      '#161522',
-      '#12111c',
-      '#0d0c15',
+      '#eef2f8',
+      '#cfd8e4',
+      '#a9b5c6',
+      '#6e7c90',
+      '#3a4556',
+      '#2a3442',
+      '#1d2633',
+      '#18202b',
+      '#121821',
+      '#0b0f15',
     ],
   },
 });

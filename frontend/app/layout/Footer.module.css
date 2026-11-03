@@ -1,14 +1,16 @@
+/* the footer is always dark, like on ducksquad.de */
 .footer {
   margin-top: calc(var(--mantine-spacing-xl) * 2);
-  padding: var(--mantine-spacing-lg) rem(24px);
-  border-top: rem(1px) solid light-dark(var(--mantine-color-gray-2), rgba(255, 255, 255, 0.06));
-  background-color: light-dark(rgba(255, 255, 255, 0.6), rgba(13, 12, 21, 0.6));
+  padding: rem(40px) rem(24px);
+  border-top: var(--ds-outline);
+  background-color: var(--ds-footer);
+  color: #dfe6ee;
 }
 
 .inner {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--mantine-spacing-md);
+  gap: var(--mantine-spacing-lg);
   align-items: center;
   justify-content: space-between;
 }
@@ -21,42 +23,41 @@
 
 .brandText {
   font-family: var(--mantine-font-family-headings);
-  font-size: rem(18px);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  color: light-dark(var(--mantine-color-dark-8), var(--mantine-color-white));
+  font-size: rem(22px);
+  font-weight: 700;
+  color: #ffffff;
 }
 
 .brandAccent {
-  background: var(--duck-gradient);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--mantine-color-duck-5);
 }
 
 .tagline {
-  font-size: var(--mantine-font-size-xs);
-  color: light-dark(var(--mantine-color-gray-6), var(--mantine-color-dark-2));
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 700;
+  color: #a9b5c6;
 }
 
 .hosted {
   display: inline-flex;
   align-items: center;
-  gap: rem(8px);
-  padding: rem(6px) rem(12px);
+  gap: rem(10px);
+  padding: rem(8px) rem(16px);
   border-radius: rem(999px);
-  border: rem(1px) solid light-dark(var(--mantine-color-gray-2), rgba(255, 255, 255, 0.08));
-  background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
-  transition: border-color 120ms ease;
+  border: rem(2px) solid var(--mantine-color-duck-5);
+  background-color: #121821;
+  transition: transform 150ms ease, box-shadow 150ms ease;
 }
 
 a.hosted:hover {
-  border-color: var(--mantine-color-duck-5);
+  transform: translate(-2px, -2px);
+  box-shadow: 3px 3px 0 var(--mantine-color-duck-5);
 }
 
 .hostedLabel {
   font-size: var(--mantine-font-size-xs);
-  color: light-dark(var(--mantine-color-gray-6), var(--mantine-color-dark-2));
+  font-weight: 700;
+  color: #a9b5c6;
 }
 
 .hostedLogo {
@@ -65,25 +66,19 @@ a.hosted:hover {
   display: block;
 }
 
+/* footer background is always dark, so the light logo is used in both color schemes */
 .onDark {
-  @mixin light {
-    display: none;
-  }
+  display: block;
 }
 
 .onLight {
-  /* the dark logo variant has a taller aspect ratio */
-  height: rem(28px);
-
-  @mixin dark {
-    display: none;
-  }
+  display: none;
 }
 
 .hostedName {
   font-size: var(--mantine-font-size-sm);
   font-weight: 700;
-  color: light-dark(var(--mantine-color-dark-8), var(--mantine-color-white));
+  color: #ffffff;
 }
 
 .links {
@@ -93,11 +88,11 @@ a.hosted:hover {
 
 .link {
   font-size: var(--mantine-font-size-sm);
-  font-weight: 600;
-  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-1));
+  font-weight: 800;
+  color: #dfe6ee;
   transition: color 120ms ease;
 
   &:hover {
-    color: light-dark(var(--mantine-color-duck-7), var(--mantine-color-duck-3));
+    color: var(--mantine-color-duck-5);
   }
 }

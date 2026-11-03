@@ -1,52 +1,122 @@
-/* disable link underlines by default */
-a {
+/* disable link underlines by default (Mantine components such as link buttons keep their own color) */
+a:not([class*="mantine-"]) {
   color: inherit;
   text-decoration: none;
 }
 
-/* DuckVOD look: soft violet-tinted surfaces with a violet/mint accent */
+/* DuckVOD look based on the DuckSquad website: thick outlines, hard offset shadows, duck yellow */
 :root {
-  --duck-accent: var(--mantine-color-duck-5);
-  --duck-accent-2: var(--mantine-color-mint-5);
-  --duck-gradient: linear-gradient(120deg, var(--duck-accent) 0%, var(--duck-accent-2) 100%);
+  --ds-line: #05080c;
+  --ds-outline: 3px solid var(--ds-line);
+  --ds-shadow: 5px 5px 0 var(--ds-line);
+  --ds-shadow-sm: 3px 3px 0 var(--ds-line);
+  --ds-shadow-lg: 8px 8px 0 var(--ds-line);
+  --ds-radius: 22px;
+  --ds-radius-sm: 14px;
+
+  --ds-cream: #121821;
+  --ds-sand: #18202b;
+  --ds-surface: #1d2633;
+  --ds-footer: #0b0f15;
+  --ds-ink: #eef2f8;
+  --ds-ink-soft: #a9b5c6;
+  --ds-duck-light: #3a3118;
+  --ds-pool-light: #0f2630;
+  --ds-hero-a: #1a2030;
+  --ds-hero-b: #2d2512;
+  --ds-glow: rgba(255, 200, 61, 0.14);
+
+  --duck-gradient: linear-gradient(120deg, var(--mantine-color-duck-5) 0%, var(--mantine-color-beak-5) 100%);
 }
 
-[data-mantine-color-scheme="light"] body {
-  background-color: #f6f5fb;
+[data-mantine-color-scheme="light"] {
+  --ds-line: #1e2a3a;
+  --ds-cream: #fffaf0;
+  --ds-sand: #f6ecd6;
+  --ds-surface: #ffffff;
+  --ds-footer: #1e2a3a;
+  --ds-ink: #1e2a3a;
+  --ds-ink-soft: #46566a;
+  --ds-duck-light: #ffe9a8;
+  --ds-pool-light: #c9f4fb;
+  --ds-hero-a: #ffe9a8;
+  --ds-hero-b: #ffd873;
+  --ds-glow: #fff6d6;
 }
 
-[data-mantine-color-scheme="dark"] body {
-  background-color: var(--mantine-color-dark-9);
-  background-image:
-    radial-gradient(60rem 30rem at 100% -10%, rgba(113, 82, 245, 0.10), transparent 60%),
-    radial-gradient(50rem 25rem at -10% 110%, rgba(49, 212, 166, 0.06), transparent 60%);
-  background-attachment: fixed;
+body {
+  background-color: var(--ds-cream);
+  color: var(--ds-ink);
 }
 
 ::selection {
   background-color: var(--mantine-color-duck-5);
-  color: var(--mantine-color-white);
+  color: #1e2a3a;
+}
+
+:focus-visible {
+  outline: 3px dashed var(--mantine-color-beak-5);
+  outline-offset: 3px;
 }
 
 /* slim scrollbars */
 * {
   scrollbar-width: thin;
-  scrollbar-color: light-dark(var(--mantine-color-gray-4), var(--mantine-color-dark-4)) transparent;
+  scrollbar-color: light-dark(var(--mantine-color-gray-5), var(--mantine-color-dark-4)) transparent;
 }
 
-/* section heading with a small gradient bar in front */
+/* chunky DuckSquad buttons */
+.mantine-Button-root[data-variant="filled"],
+.mantine-Button-root[data-variant="default"],
+.mantine-Button-root[data-variant="gradient"] {
+  border: var(--ds-outline);
+  box-shadow: var(--ds-shadow-sm);
+  font-family: var(--mantine-font-family-headings);
+  font-weight: 600;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.mantine-Button-root[data-variant="filled"]:hover,
+.mantine-Button-root[data-variant="default"]:hover,
+.mantine-Button-root[data-variant="gradient"]:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--ds-shadow);
+}
+
+.mantine-Button-root[data-variant="filled"]:active,
+.mantine-Button-root[data-variant="default"]:active,
+.mantine-Button-root[data-variant="gradient"]:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--ds-line);
+}
+
+.mantine-Button-root[data-variant="default"] {
+  background-color: var(--ds-surface);
+}
+
+/* section heading as a little sticker */
 .duck-section-title {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
-  letter-spacing: -0.01em;
+  gap: 0.5rem;
+  padding: 0.15em 0.8em;
+  background-color: var(--mantine-color-duck-5);
+  color: #1e2a3a;
+  border: var(--ds-outline);
+  border-radius: 999px;
+  box-shadow: var(--ds-shadow-sm);
+  transform: rotate(-1deg);
 }
 
 .duck-section-title::before {
   content: "";
-  display: inline-block;
-  width: 0.35rem;
-  height: 1.4rem;
-  border-radius: 999px;
-  background: var(--duck-gradient);
+  width: 1.1em;
+  height: 1.1em;
+  flex-shrink: 0;
+  background: url("/images/ducksquad-mascot.webp") center / contain no-repeat;
+}
+
+/* dark ink on the yellow primary color, like the DuckSquad buttons */
+:root[data-mantine-color-scheme] {
+  --mantine-primary-color-contrast: #1e2a3a;
 }

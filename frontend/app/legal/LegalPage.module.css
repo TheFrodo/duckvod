@@ -4,9 +4,10 @@
 }
 
 .card {
-  background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-8));
-  border: rem(1px) solid light-dark(var(--mantine-color-gray-2), rgba(255, 255, 255, 0.06));
-  border-radius: var(--mantine-radius-xl);
+  background-color: var(--ds-surface);
+  border: var(--ds-outline);
+  box-shadow: var(--ds-shadow);
+  border-radius: var(--ds-radius);
   padding: calc(var(--mantine-spacing-xl) * 1.5);
 
   @media (max-width: $mantine-breakpoint-sm) {
@@ -16,7 +17,7 @@
 
 .content {
   line-height: 1.7;
-  color: light-dark(var(--mantine-color-gray-8), var(--mantine-color-dark-0));
+  color: var(--ds-ink);
 
   h2 {
     margin-top: calc(var(--mantine-spacing-xl) * 1.25);
@@ -36,7 +37,7 @@
   }
 
   a {
-    color: light-dark(var(--mantine-color-duck-7), var(--mantine-color-duck-3));
+    color: light-dark(var(--mantine-color-pool-8), var(--mantine-color-pool-4));
     text-decoration: underline;
     text-underline-offset: rem(3px);
   }
@@ -54,4 +55,8 @@
   margin-top: calc(var(--mantine-spacing-xl) * 1.5);
   font-size: var(--mantine-font-size-sm);
   color: light-dark(var(--mantine-color-gray-6), var(--mantine-color-dark-2));
+}
+
+.card > h1 {
+  margin-bottom: var(--mantine-spacing-lg);
 }

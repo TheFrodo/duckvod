@@ -8,8 +8,8 @@ export default function manifest(): MetadataRoute.Manifest {
     lang: "de",
     start_url: "/",
     display: "standalone",
-    background_color: "#0d0c15",
-    theme_color: "#7152f5",
+    background_color: "#121821",
+    theme_color: "#ffc83d",
     icons: [
       {
         src: "/android-chrome-192x192.png",

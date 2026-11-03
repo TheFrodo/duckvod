@@ -122,7 +122,7 @@ const VideoCard = ({
             <Tooltip label={`${Math.round(playbackProgress)}% ${t('watched')}`}>
               <Progress
                 className={classes.progressBar}
-                color="mint"
+                color="pool"
                 radius={0}
                 size="sm"
                 value={playbackProgress}

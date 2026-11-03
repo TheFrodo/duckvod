@@ -8,7 +8,7 @@ import classes from './Footer.module.css';
 const HOSTING_PARTNER = {
   name: "Nexosystems",
   url: "https://nexo.systems/a/thefrodode",
-  // light logo is shown on the dark color scheme, dark logo on the light color scheme
+  // the footer is always dark, so the light logo is shown (dark logo is kept as fallback asset)
   logoLight: "/images/nexosystems-light.svg",
   logoDark: "/images/nexosystems-dark.svg",
 };

@@ -2,11 +2,6 @@
   position: relative;
   background-color: transparent;
   overflow: visible;
-  transition: transform 160ms ease;
-
-  &:hover {
-    transform: translateY(-3px);
-  }
 }
 
 .processingOverlay {
@@ -27,15 +22,15 @@
   position: relative;
   aspect-ratio: 16 / 9;
   overflow: hidden;
-  border-radius: var(--mantine-radius-lg);
-  background-color: light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-7));
-  box-shadow: 0 0 0 rem(1px) light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.05));
-  transition: box-shadow 160ms ease;
+  border: var(--ds-outline);
+  border-radius: var(--ds-radius-sm);
+  background-color: var(--ds-surface);
+  box-shadow: var(--ds-shadow);
+  transition: transform 200ms ease, box-shadow 200ms ease;
 
   .card:hover & {
-    box-shadow:
-      0 0 0 rem(2px) var(--mantine-color-duck-5),
-      0 rem(10px) rem(28px) rgba(113, 82, 245, 0.28);
+    transform: translate(-3px, -3px);
+    box-shadow: var(--ds-shadow-lg);
   }
 }
 
@@ -53,11 +48,6 @@
 .videoImage {
   pointer-events: none;
   cursor: default;
-  transition: transform 300ms ease;
-
-  .card:hover & {
-    transform: scale(1.04);
-  }
 }
 
 .durationBadge {
@@ -66,14 +56,15 @@
   bottom: rem(8px);
   z-index: 3;
   pointer-events: none;
-  padding: rem(2px) rem(7px);
-  border-radius: var(--mantine-radius-sm);
+  padding: rem(1px) rem(8px);
+  border: rem(2px) solid var(--ds-line);
+  border-radius: rem(8px);
   font-family: var(--mantine-font-family-monospace);
   font-size: rem(12px);
   font-weight: 700;
-  color: var(--mantine-color-white);
-  background-color: rgba(10, 9, 18, 0.78);
-  backdrop-filter: blur(4px);
+  color: #1e2a3a;
+  background-color: var(--mantine-color-duck-5);
+  box-shadow: 2px 2px 0 var(--ds-line);
   transition: bottom 200ms ease;
 
   .videoImageWrapper:hover & {
@@ -88,14 +79,13 @@
 }
 
 .title {
-  margin-top: var(--mantine-spacing-xs);
+  margin-top: var(--mantine-spacing-sm);
   margin-bottom: rem(2px);
   font-weight: 600;
-  letter-spacing: -0.01em;
   transition: color 120ms ease;
 
   .card:hover & {
-    color: light-dark(var(--mantine-color-duck-7), var(--mantine-color-duck-3));
+    color: light-dark(var(--mantine-color-beak-7), var(--mantine-color-duck-5));
   }
 }
 
@@ -103,24 +93,27 @@
   display: inline-flex;
   align-items: center;
   gap: rem(5px);
-  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-1));
+  font-weight: 700;
+  color: var(--ds-ink-soft);
 }
 
 .metaIcon {
   flex-shrink: 0;
-  color: light-dark(var(--mantine-color-duck-6), var(--mantine-color-duck-3));
+  color: light-dark(var(--mantine-color-beak-7), var(--mantine-color-duck-5));
 }
 
 .typeBadge {
   font-family: var(--mantine-font-family-monospace);
+  border: rem(2px) solid var(--ds-line);
 }
 
 .progressBar {
-  margin-top: rem(-5px);
-  margin-left: rem(8px);
-  margin-right: rem(8px);
+  margin-top: rem(-9px);
+  margin-left: rem(10px);
+  margin-right: rem(10px);
   position: relative;
   z-index: 4;
+  border: rem(2px) solid var(--ds-line);
   border-radius: rem(999px);
 }
 
