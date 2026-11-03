@@ -1,0 +1,9 @@
+.card {
+  margin-top: var(--mantine-spacing-xl);
+  margin-bottom: var(--mantine-spacing-xl);
+  padding: var(--mantine-spacing-xl);
+  background-color: var(--ds-surface);
+  border: var(--ds-outline);
+  border-radius: var(--ds-radius);
+  box-shadow: var(--ds-shadow);
+}

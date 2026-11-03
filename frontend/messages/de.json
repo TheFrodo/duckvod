@@ -969,7 +969,10 @@
         "highlight": "Highlight",
         "upload": "Hochgeladen"
       }
-    }
+    },
+    "chatPanelTitle": "Stream-Chat",
+    "chatPanelReplay": "Replay",
+    "chatPanelReadOnly": "Chat-Wiedergabe – nur lesen"
   },
   "MultistreamComponents": {
     "seekBackTooltip": "{seconds} Sekunden zurückspringen",

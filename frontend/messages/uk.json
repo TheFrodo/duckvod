@@ -955,7 +955,10 @@
         "highlight": "Хайлайт",
         "upload": "Завантаження"
       }
-    }
+    },
+    "chatPanelTitle": "Чат трансляції",
+    "chatPanelReplay": "Повтор",
+    "chatPanelReadOnly": "Повтор чату – лише перегляд"
   },
   "MultistreamComponents": {
     "seekBackTooltip": "Перемотати назад на {seconds} секунд",

@@ -2,6 +2,7 @@ import { useGetVideoChatHistogram } from "@/app/hooks/useVideos";
 import { BarChart } from '@mantine/charts';
 import { Title } from "@mantine/core";
 import GanymedeLoadingText from "../utils/GanymedeLoadingText";
+import classes from "./ChatHistogram.module.css";
 import { RefObject } from "react";
 import { useTranslations } from "next-intl";
 
@@ -42,12 +43,16 @@ const VideoChatHistogram = ({ videoId, playerRef }: Props) => {
   }
 
   return (
-    <div>
-      <Title my={5}>{t('chatHistogramTitle')}</Title>
+    <div className={classes.card}>
+      <Title order={2} className="duck-section-title" mb="lg">{t('chatHistogramTitle')}</Title>
       <BarChart
         h={300}
         data={result}
         dataKey="Time"
+        barProps={{ radius: [6, 6, 0, 0], stroke: "var(--ds-line)", strokeWidth: 2 }}
+        gridAxis="y"
+        strokeDasharray="4 4"
+        cursorFill="color-mix(in srgb, var(--mantine-color-duck-5) 18%, transparent)"
         barChartProps={{
           style: { cursor: "pointer" },
           onClick: ({ activeLabel }) => {
@@ -59,7 +64,7 @@ const VideoChatHistogram = ({ videoId, playerRef }: Props) => {
           },
         }}
         series={[
-          { name: 'Messages', color: 'violet.6' },
+          { name: 'Messages', color: 'duck.5' },
         ]}
         tickLine="y"
       />

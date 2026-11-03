@@ -972,7 +972,10 @@
         "highlight": "Highlight",
         "upload": "Upload"
       }
-    }
+    },
+    "chatPanelTitle": "Stream chat",
+    "chatPanelReplay": "Replay",
+    "chatPanelReadOnly": "Chat replay – read only"
   },
   "MultistreamComponents": {
     "seekBackTooltip": "Seek back {seconds} seconds",

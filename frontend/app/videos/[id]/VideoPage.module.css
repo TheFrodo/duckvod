@@ -24,8 +24,8 @@
 
 .videoPlayer {
   width: 100%;
-  height: calc(100vh - rem(56px) - 60px);
-  max-height: calc(100vh - rem(56px) - 60px);
+  height: calc(100vh - rem(72px) - 60px);
+  max-height: calc(100vh - rem(72px) - 60px);
 
   @media (max-width: em(1000px)) {
     height: auto !important;
@@ -40,8 +40,8 @@
 
 .chatColumn {
   width: 100%;
-  height: calc(100vh - rem(56px) - 60px);
-  max-height: calc(100vh - rem(56px) - 60px);
+  height: calc(100vh - rem(72px) - 60px);
+  max-height: calc(100vh - rem(72px) - 60px);
 }
 .chatColumnTheaterMode {
   width: 100%;

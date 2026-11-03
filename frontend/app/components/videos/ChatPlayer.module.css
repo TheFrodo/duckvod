@@ -1,12 +1,86 @@
-.chatPlayerContainer {
+/* chat panel styled like a live stream chat (DuckSquad look) */
+.chatPanel {
+  display: flex;
+  flex-direction: column;
   height: 100%;
+  min-height: 0;
+  background-color: var(--ds-surface);
+  border-left: var(--ds-outline);
+}
+
+.chatHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: rem(8px);
+  flex-shrink: 0;
+  padding: rem(10px) rem(12px);
+  background-color: var(--ds-sand);
+  border-bottom: var(--ds-outline);
+}
+
+.chatHeaderTitle {
+  font-family: var(--mantine-font-family-headings);
+  font-size: rem(17px);
+  font-weight: 700;
+  color: var(--ds-ink);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.chatHeaderBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: rem(6px);
+  font-size: rem(11px);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #1e2a3a;
+  background-color: var(--mantine-color-duck-5);
+  border: rem(2px) solid var(--ds-line);
+  border-radius: rem(999px);
+  padding: rem(1px) rem(8px);
+
+  &::before {
+    content: "";
+    width: rem(7px);
+    height: rem(7px);
+    border-radius: 50%;
+    background-color: var(--mantine-color-beak-6);
+    border: rem(1px) solid var(--ds-line);
+  }
+}
+
+.chatPlayerContainer {
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: scroll;
-  padding-left: 2px;
-  padding-right: 2px;
+  padding: rem(6px) rem(4px);
   -ms-overflow-style: none;
   scrollbar-width: none;
 
   &::-webkit-scrollbar {
     display: none;
   }
+}
+
+.chatFooter {
+  flex-shrink: 0;
+  padding: rem(10px) rem(12px);
+  border-top: var(--ds-outline);
+  background-color: var(--ds-sand);
+}
+
+/* looks like the chat input field, but chat replays are read-only */
+.chatFooterInput {
+  padding: rem(8px) rem(12px);
+  border: rem(2px) solid var(--ds-line);
+  border-radius: var(--ds-radius-sm);
+  background-color: var(--ds-cream);
+  color: var(--ds-ink-soft);
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 700;
+  user-select: none;
+  cursor: not-allowed;
 }

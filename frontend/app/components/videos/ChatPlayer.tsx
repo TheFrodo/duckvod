@@ -501,82 +501,104 @@ const ChatPlayer = ({ video, playerRef }: Params) => {
     scrollToBottom(false);
   }, [scrollToBottom]);
 
+  const chatHeader = (
+    <div className={classes.chatHeader}>
+      <span className={classes.chatHeaderTitle}>{t('chatPanelTitle')}</span>
+      <span className={classes.chatHeaderBadge}>{t('chatPanelReplay')}</span>
+    </div>
+  );
+
+  const chatFooter = (
+    <div className={classes.chatFooter}>
+      <div className={classes.chatFooterInput} aria-hidden="true">
+        {t('chatPanelReadOnly')}
+      </div>
+    </div>
+  );
+
   if (!isReady) {
     return (
-      <div className={classes.chatPlayerContainer}>
-        <Center>
-          <div style={{ marginTop: "100%" }}>
-            <Center>
-              <Loader size="xl" />
-            </Center>
-            <Text mt={5}>{t('loadingChat')}</Text>
-            {error && (
-              <Text size="sm">
-                {t('chatError')}: {error.message}
-              </Text>
-            )}
-          </div>
-        </Center>
-
+      <div className={classes.chatPanel}>
+        {chatHeader}
+        <div className={classes.chatPlayerContainer}>
+          <Center h="100%">
+            <div>
+              <Center>
+                <Loader size="xl" />
+              </Center>
+              <Text mt={5}>{t('loadingChat')}</Text>
+              {error && (
+                <Text size="sm">
+                  {t('chatError')}: {error.message}
+                </Text>
+              )}
+            </div>
+          </Center>
+        </div>
+        {chatFooter}
       </div>
     );
   }
 
   return (
-    <div
-      ref={chatContainerRef}
-      className={`${classes.chatPlayerContainer} `}
-    >
-      {error && (
-        <Box className="p-2 mb-2 bg-red-100 text-red-800 rounded">
-          <Text size="sm">{error.message}</Text>
-        </Box>
-      )}
-      {messages.map((comment) => (
-        <ChatMessage
-          key={comment._id}
-          comment={comment}
-          showTimestamp={showChatTimestamps}
-          timestampSeconds={showChatTimestamps ? getCommentTimestampSeconds(comment) : null}
-          onTimestampClick={() => {
-            if (!Number.isFinite(comment.content_offset_seconds)) return;
-            seekToComment(comment.content_offset_seconds);
-          }}
-          onUserNameClick={comment.commenter._id || (video.type === VideoType.Live && (comment.commenter.name || comment.commenter.display_name))
-            ? (ev) => openChatterMessagesWindow(
-              comment.commenter._id,
-              comment.commenter.name || comment.commenter.display_name,
-              comment.commenter.display_name,
-              comment._id,
-              ev,
-            )
-            : undefined}
-        />
-      ))}
-      {Object.keys(chatterMessagesWindows).map(chatterId => {
-        const windowData = chatterMessagesWindows[chatterId];
-        if (!windowData) return null;
-
-        return (
-          <ChatChatterMessages
-            key={chatterId}
-            videoId={video.id}
-            timestampSeconds={getCommentTimestampSeconds}
-            onTimestampClick={(contentOffsetSeconds) => {
-              if (!Number.isFinite(contentOffsetSeconds)) return;
-              seekToComment(contentOffsetSeconds);
+    <div className={classes.chatPanel}>
+      {chatHeader}
+      <div
+        ref={chatContainerRef}
+        className={`${classes.chatPlayerContainer} `}
+      >
+        {error && (
+          <Box className="p-2 mb-2 bg-red-100 text-red-800 rounded">
+            <Text size="sm">{error.message}</Text>
+          </Box>
+        )}
+        {messages.map((comment) => (
+          <ChatMessage
+            key={comment._id}
+            comment={comment}
+            showTimestamp={showChatTimestamps}
+            timestampSeconds={showChatTimestamps ? getCommentTimestampSeconds(comment) : null}
+            onTimestampClick={() => {
+              if (!Number.isFinite(comment.content_offset_seconds)) return;
+              seekToComment(comment.content_offset_seconds);
             }}
-            chatterId={windowData.chatterId}
-            chatterLogin={windowData.chatterLogin}
-            chatterName={windowData.chatterName}
-            isLiveArchive={video.type === VideoType.Live}
-            initialPosition={windowData.initialPosition}
-            initialScrollMessageId={windowData.initialScrollMessageId}
-            onClose={() => closeChatterMessagesWindow(chatterId)}
-            chatMapsRef={chatMapsRef}
+            onUserNameClick={comment.commenter._id || (video.type === VideoType.Live && (comment.commenter.name || comment.commenter.display_name))
+              ? (ev) => openChatterMessagesWindow(
+                comment.commenter._id,
+                comment.commenter.name || comment.commenter.display_name,
+                comment.commenter.display_name,
+                comment._id,
+                ev,
+              )
+              : undefined}
           />
-        );
-      })}
+        ))}
+        {Object.keys(chatterMessagesWindows).map(chatterId => {
+          const windowData = chatterMessagesWindows[chatterId];
+          if (!windowData) return null;
+  
+          return (
+            <ChatChatterMessages
+              key={chatterId}
+              videoId={video.id}
+              timestampSeconds={getCommentTimestampSeconds}
+              onTimestampClick={(contentOffsetSeconds) => {
+                if (!Number.isFinite(contentOffsetSeconds)) return;
+                seekToComment(contentOffsetSeconds);
+              }}
+              chatterId={windowData.chatterId}
+              chatterLogin={windowData.chatterLogin}
+              chatterName={windowData.chatterName}
+              isLiveArchive={video.type === VideoType.Live}
+              initialPosition={windowData.initialPosition}
+              initialScrollMessageId={windowData.initialScrollMessageId}
+              onClose={() => closeChatterMessagesWindow(chatterId)}
+              chatMapsRef={chatMapsRef}
+            />
+          );
+        })}
+      </div>
+      {chatFooter}
     </div>
   );
 };
