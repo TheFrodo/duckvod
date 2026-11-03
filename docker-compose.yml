@@ -1,7 +1,7 @@
 services:
   ganymede:
     container_name: ganymede
-    image: ghcr.io/zibbp/ganymede:latest
+    image: ghcr.io/thefrodo/duckvod:latest # use :dev for the test version
     restart: unless-stopped
     stop_grace_period: 90s
     depends_on:

@@ -92,6 +92,7 @@
 .metaItem {
   display: inline-flex;
   align-items: center;
+  white-space: nowrap;
   gap: rem(5px);
   font-weight: 700;
   color: var(--ds-ink-soft);
@@ -103,6 +104,8 @@
 }
 
 .typeBadge {
+  flex-shrink: 0;
+  overflow: visible;
   font-family: var(--mantine-font-family-monospace);
   border: rem(2px) solid var(--ds-line);
 }
@@ -124,4 +127,5 @@
 .vodMenu {
   margin-left: auto;
   display: flex;
+  align-items: center;
 }

@@ -192,7 +192,7 @@ const VideoCard = ({
 
       {/* Additional video information and menu */}
       <Flex justify="flex-start"
-        align="center" pt={2}>
+        align="center" wrap="wrap" columnGap={8} pt={2}>
 
         <Tooltip
           label={`${t('streamedOnText')} ${new Date(
