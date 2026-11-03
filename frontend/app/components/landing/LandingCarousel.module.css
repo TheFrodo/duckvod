@@ -1,0 +1,31 @@
+/* mobile carousels on the start page */
+.root {
+  /* room for the indicators below the cards */
+  padding-bottom: rem(28px);
+}
+
+.slide {
+  /* keep the hard offset shadow of the cards visible */
+  padding: rem(4px) rem(10px) rem(12px) rem(4px);
+}
+
+.indicators {
+  bottom: rem(4px);
+  gap: rem(6px);
+}
+
+.indicator {
+  width: rem(10px);
+  height: rem(10px);
+  border-radius: 50%;
+  background-color: var(--ds-surface);
+  border: rem(2px) solid var(--ds-line);
+  opacity: 1;
+  transition: width 200ms ease, background-color 200ms ease;
+
+  &[data-active] {
+    width: rem(24px);
+    border-radius: rem(999px);
+    background-color: var(--mantine-color-duck-5);
+  }
+}

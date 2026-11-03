@@ -5,9 +5,7 @@
   height: rem(72px);
   padding-left: rem(24px);
   padding-right: rem(24px);
-  background-color: color-mix(in srgb, var(--ds-cream) 92%, transparent);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background-color: var(--ds-cream);
   border-bottom: var(--ds-outline);
 }
 

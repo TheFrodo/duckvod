@@ -4,6 +4,7 @@ import { rem, SimpleGrid, useMantineTheme } from "@mantine/core"
 import { useMediaQuery } from "@mantine/hooks"
 import VideoCard from "../videos/Card"
 import { Carousel } from "@mantine/carousel";
+import carouselClasses from "./LandingCarousel.module.css";
 import { useTranslations } from "next-intl"
 
 type Props = {
@@ -29,7 +30,8 @@ const ContinueWatching = ({ count }: Props) => {
         <Carousel
           slideSize={{ base: '100%', sm: '50%' }}
           slideGap={{ base: rem(4), sm: 'xl' }}
-          controlSize={40}
+          withControls={false}
+          classNames={carouselClasses}
           withIndicators
           emblaOptions={{
             align: 'start',
