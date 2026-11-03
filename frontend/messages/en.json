@@ -1151,5 +1151,9 @@
   },
   "MiscComponents": {
     "recordsPerPageLabel": "Records per page"
+  },
+  "TestBanner": {
+    "label": "Test version",
+    "text": "This is a test version of DuckVOD. Features may be unfinished and errors can occur."
   }
 }

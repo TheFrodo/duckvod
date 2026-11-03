@@ -13,6 +13,7 @@ import { EnvScript, PublicEnvScript } from 'next-runtime-env';
 import { getLocale } from 'next-intl/server';
 import { NextIntlClientProvider } from 'next-intl';
 import ForceLogin from './components/authentication/ForceLogin';
+import { TestBanner } from './layout/TestBanner';
 
 const SITE_NAME = "DuckVOD";
 const SITE_DESCRIPTION = "DuckVOD archiviert Twitch-VODs und Livestreams der DuckSquad Community – mit gerendertem Echtzeit-Chat, der sich auch außerhalb von DuckVOD ansehen lässt. Verpasste Quaks? Hier kannst du alles nachwatscheln.";
@@ -121,6 +122,7 @@ export default async function RootLayout({
       <body>
 
         <NextIntlClientProvider>
+          <TestBanner />
           <Providers>
             {/* ForceLogin prevents rendering the rest of the page if login is required */}
             <ForceLogin>{children}</ForceLogin>

@@ -164,6 +164,10 @@ COPY --from=tools /usr/local/bin/yt-dlp /usr/local/bin/yt-dlp
 # Production stage
 FROM debian:bookworm-slim
 
+# build tag at runtime, the frontend shows a test version banner when it is "dev"
+ARG GIT_TAG
+ENV GIT_TAG=$GIT_TAG
+
 WORKDIR /opt/app
 
 # Install dependencies

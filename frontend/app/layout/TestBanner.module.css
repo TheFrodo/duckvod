@@ -1,0 +1,36 @@
+/* caution-tape style strip shown on test builds */
+.banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: rem(10px);
+  padding: rem(8px) rem(16px);
+  background:
+    repeating-linear-gradient(
+      -45deg,
+      var(--mantine-color-duck-5) 0 rem(18px),
+      var(--mantine-color-duck-6) rem(18px) rem(36px)
+    );
+  border-bottom: var(--ds-outline);
+  color: #1e2a3a;
+  font-weight: 800;
+  font-size: var(--mantine-font-size-sm);
+  text-align: center;
+}
+
+.label {
+  font-family: var(--mantine-font-family-headings);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #ffffff;
+  background-color: #1e2a3a;
+  border: rem(2px) solid var(--ds-line);
+  border-radius: rem(999px);
+  padding: rem(1px) rem(10px);
+}
+
+.text {
+  line-height: 1.4;
+}

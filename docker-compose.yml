@@ -46,6 +46,7 @@ services:
       - REQUIRE_LOGIN=false
       # - CDN_URL= # Set this if you are hosting static files through another service (nginx, S3, etc). By default this does not need to be configured as Ganymede serves the static files.
       # - SITE_URL=https://duckvod.example.de # Public URL of the site, used for SEO (canonical links, sitemap.xml, robots.txt). Falls back to the request host if not set.
+      # - SHOW_TEST_BANNER=true # Force the "test version" banner on (true) or off (false). By default it is shown automatically on images built from the dev branch.
     volumes:
       - /path/to/vod/storage:/data/videos # update VIDEOS_DIR env var
       - ./temp:/data/temp # update TEMP_DIR env var
