@@ -12,8 +12,8 @@ export async function getUserLocale() {
   ) {
     return process.env.NEXT_PUBLIC_DEFAULT_LOCALE;
   }
-  // Otherwise, use the locale from the cookie
-  return (await cookies()).get(COOKIE_NAME)?.value || "en";
+  // Otherwise, use the locale from the cookie (DuckVOD defaults to German)
+  return (await cookies()).get(COOKIE_NAME)?.value || "de";
 }
 
 export async function setUserLocale(locale: string) {
