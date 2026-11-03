@@ -1,16 +1,12 @@
 "use client"
-import { Box, Button, Container, Flex, Group, Title, Text, useMantineTheme } from '@mantine/core';
+import { Box, Button, Container, Flex, Group, Text } from '@mantine/core';
 import classes from './Hero.module.css';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useMediaQuery } from '@mantine/hooks';
 import { useTranslations } from 'next-intl'
 
 
 export function LandingHero() {
-  const theme = useMantineTheme()
-  const isMobile = useMediaQuery(`(max-width: ${theme.breakpoints.sm})`);
-
   const t = useTranslations("LandingHeroComponent")
 
   return (
@@ -20,8 +16,8 @@ export function LandingHero() {
 
           <div>
             <span className={classes.eyebrow}>VOD · Archiv · Chat-Replay</span>
-            <Text className={classes.title}>Duck<span className={classes.titleAccent}>VOD</span></Text>
-            <Title className={classes.subtitle} mt={10} order={3}>{t('subtitle')}</Title>
+            <Text component="h1" className={classes.title}>Duck<span className={classes.titleAccent}>VOD</span></Text>
+            <Text component="p" className={classes.subtitle} mt={10}>{t('subtitle')}</Text>
             <Flex mt={28} wrap="wrap" gap={12}>
               <Button
                 variant="filled"
@@ -44,11 +40,10 @@ export function LandingHero() {
             </Flex>
           </div>
 
-          {!isMobile && (
-            <Box mr={40}>
-              <Image src="/images/ducksquad-mascot.webp" height={220} width={220} alt="DuckSquad Maskottchen" className={classes.mascot} priority />
-            </Box>
-          )}
+          {/* hidden on small screens via CSS so there is no layout shift after hydration */}
+          <Box mr={40} visibleFrom="sm">
+            <Image src="/images/ducksquad-mascot.webp" height={220} width={220} alt="DuckSquad Maskottchen" className={classes.mascot} unoptimized priority />
+          </Box>
         </Group>
       </Container>
 

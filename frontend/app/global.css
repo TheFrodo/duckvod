@@ -113,7 +113,7 @@ body {
   width: 1.1em;
   height: 1.1em;
   flex-shrink: 0;
-  background: url("/images/ducksquad-mascot.webp") center / contain no-repeat;
+  background: url("/images/ducksquad-mascot-64.webp") center / contain no-repeat;
 }
 
 /* dark ink on the yellow primary color, like the DuckSquad buttons */

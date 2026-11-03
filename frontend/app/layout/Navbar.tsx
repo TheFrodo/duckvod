@@ -184,7 +184,7 @@ export function Navbar() {
       <div className={classes.inner}>
         <Group gap="lg">
           <Link href="/" className={classes.brand}>
-            <Image src="/images/ganymede_logo.png" height={30} width={30} alt="DuckVOD logo" />
+            <Image src="/images/duckvod-logo-64.webp" height={30} width={30} alt="DuckVOD logo" unoptimized priority />
             <span className={classes.brandText}>Duck<span className={classes.brandAccent}>VOD</span></span>
           </Link>
           <Group gap={4} visibleFrom="md">{mainLinks}</Group>
@@ -196,6 +196,7 @@ export function Navbar() {
             leftSectionPointerEvents="none"
             leftSection={<IconSearch style={{ width: rem(16), height: rem(16) }} stroke={1.5} />}
             placeholder={t('search')}
+            aria-label={t('search')}
             radius="xl"
             w={260}
             classNames={{ input: classes.searchInput }}
@@ -240,7 +241,7 @@ export function Navbar() {
             <Menu shadow="md" width={200}>
               <Menu.Target>
                 <Tooltip label={t('language')}>
-                  <ActionIcon variant="subtle" color="gray" radius="xl" aria-label="Profile" size="lg">
+                  <ActionIcon variant="subtle" color="gray" radius="xl" aria-label={t('language')} size="lg">
                     <IconLanguage style={{ width: '70%', height: '70%' }} stroke={1.5} />
                   </ActionIcon>
                 </Tooltip>
@@ -284,7 +285,7 @@ export function Navbar() {
             </div>
           )}
         </Group>
-        <Burger opened={drawerOpened} onClick={toggleDrawer} size="md" hiddenFrom="md" />
+        <Burger opened={drawerOpened} onClick={toggleDrawer} size="md" hiddenFrom="md" aria-label="Navigation" />
       </div>
       <Drawer
         opened={drawerOpened}
@@ -306,6 +307,7 @@ export function Navbar() {
             leftSectionPointerEvents="none"
             leftSection={<IconSearch style={{ width: rem(16), height: rem(16) }} stroke={1.5} />}
             placeholder={t('search')}
+            aria-label={t('search')}
             onKeyUp={(e) => {
               if (e.key === "Enter" && searchQuery) {
                 router.push(`/search?q=${encodeURI(searchQuery)}`);

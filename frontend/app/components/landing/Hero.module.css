@@ -32,6 +32,7 @@
   font-weight: 700;
   line-height: 1.05;
   max-width: 620px;
+  margin: 0;
   font-size: clamp(2.6rem, 6vw, 4.4rem);
 }
 
@@ -47,6 +48,9 @@
   font-family: var(--mantine-font-family);
   font-weight: 700;
   max-width: 540px;
+  font-size: clamp(1.15rem, 2.2vw, 1.4rem);
+  line-height: 1.4;
+  margin-bottom: 0;
 }
 
 .mascot {
