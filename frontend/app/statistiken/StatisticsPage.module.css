@@ -44,12 +44,6 @@
   margin-bottom: var(--mantine-spacing-md);
 }
 
-.cardText {
-  font-weight: 700;
-  color: var(--ds-ink-soft);
-  margin-bottom: var(--mantine-spacing-md);
-}
-
 /* stat tiles */
 .tile {
   display: flex;
@@ -95,42 +89,6 @@
   font-weight: 700;
   font-size: var(--mantine-font-size-sm);
   color: var(--ds-ink-soft);
-}
-
-/* storage */
-.storageBar {
-  border: rem(2px) solid var(--ds-line);
-  background-color: var(--ds-cream);
-}
-
-.legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--mantine-spacing-sm) var(--mantine-spacing-xl);
-  margin-top: var(--mantine-spacing-md);
-}
-
-.legendItem {
-  display: inline-flex;
-  align-items: center;
-  gap: rem(8px);
-  font-weight: 700;
-}
-
-.legendDot {
-  width: rem(14px);
-  height: rem(14px);
-  border-radius: 50%;
-  border: rem(2px) solid var(--ds-line);
-}
-
-.legendLabel {
-  color: var(--ds-ink-soft);
-}
-
-.legendValue {
-  color: var(--ds-ink);
-  font-family: var(--mantine-font-family-monospace);
 }
 
 /* types + channels */

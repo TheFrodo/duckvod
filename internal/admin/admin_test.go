@@ -125,9 +125,4 @@ func (s *AdminTest) GetPublicStatisticsTest(t *testing.T) {
 		}
 	}
 	assert.True(t, found)
-
-	if assert.NotNil(t, resp.Storage) {
-		assert.Greater(t, resp.Storage.TotalBytes, int64(0))
-		assert.GreaterOrEqual(t, resp.Storage.TotalBytes, resp.Storage.FreeBytes)
-	}
 }

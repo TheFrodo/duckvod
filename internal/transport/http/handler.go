@@ -315,7 +315,7 @@ func groupV1Routes(e *echo.Group, h *Handler) {
 	archiveGroup.POST("/convert-twitch-live-chat", h.ConvertTwitchChat, AuthAPIKeyOrSessionMiddleware, AuthGetUserMiddleware, RequireRoleOrScope(utils.AdminRole, utils.ApiKeyScopeArchiveAdmin))
 
 	// Public aggregate statistics for the statistics page. Intentionally
-	// unauthenticated; it exposes no paths, users or host details.
+	// unauthenticated; it exposes no paths, users, host or filesystem details.
 	e.GET("/statistics", h.GetPublicStatistics)
 
 	// Admin: system stats and info.

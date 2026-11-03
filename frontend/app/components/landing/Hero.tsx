@@ -28,15 +28,6 @@ export function LandingHero() {
               >
                 {t('channelsButton')}
               </Button>
-              <Button
-                size="md"
-                radius="xl"
-                variant="default"
-                component={Link}
-                href="/login"
-              >
-                {t('loginButton')}
-              </Button>
             </Flex>
           </div>
 

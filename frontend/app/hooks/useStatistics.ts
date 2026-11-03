@@ -11,12 +11,6 @@ export interface PublicChannelStatistics {
   storage_bytes: number;
 }
 
-export interface PublicStorageStatistics {
-  used_bytes: number; // Tracked video storage
-  free_bytes: number; // Free space of the videos filesystem
-  total_bytes: number; // Capacity of the videos filesystem
-}
-
 export interface PublicStatistics {
   video_count: number;
   channel_count: number;
@@ -24,7 +18,6 @@ export interface PublicStatistics {
   total_storage_bytes: number;
   video_types: Record<string, number>;
   channels: PublicChannelStatistics[];
-  storage?: PublicStorageStatistics;
   first_streamed_at?: string;
   last_streamed_at?: string;
 }

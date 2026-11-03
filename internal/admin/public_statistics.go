@@ -5,10 +5,6 @@ import (
 	"fmt"
 	"sort"
 	"time"
-
-	"github.com/rs/zerolog/log"
-	"github.com/zibbp/ganymede/internal/config"
-	"github.com/zibbp/ganymede/internal/utils"
 )
 
 type PublicChannelStatistics struct {
@@ -21,14 +17,8 @@ type PublicChannelStatistics struct {
 	StorageBytes    int64  `json:"storage_bytes"`
 }
 
-type PublicStorageStatistics struct {
-	UsedBytes  int64 `json:"used_bytes"`  // Tracked video storage
-	FreeBytes  int64 `json:"free_bytes"`  // Free space of the videos filesystem
-	TotalBytes int64 `json:"total_bytes"` // Capacity of the videos filesystem
-}
-
 // GetPublicStatisticsResponse only contains aggregate archive numbers that are safe to show
-// to anonymous visitors: no file paths, users, queue or host details.
+// to anonymous visitors: no file paths, users, queue, host or filesystem details.
 type GetPublicStatisticsResponse struct {
 	VideoCount           int                       `json:"video_count"`
 	ChannelCount         int                       `json:"channel_count"`
@@ -36,7 +26,6 @@ type GetPublicStatisticsResponse struct {
 	TotalStorageBytes    int64                     `json:"total_storage_bytes"`
 	VideoTypes           map[string]int            `json:"video_types"`
 	Channels             []PublicChannelStatistics `json:"channels"`
-	Storage              *PublicStorageStatistics  `json:"storage,omitempty"`
 	FirstStreamedAt      *time.Time                `json:"first_streamed_at,omitempty"`
 	LastStreamedAt       *time.Time                `json:"last_streamed_at,omitempty"`
 }
@@ -103,21 +92,6 @@ func (s *Service) GetPublicStatistics(ctx context.Context) (GetPublicStatisticsR
 		}
 		return resp.Channels[i].Name < resp.Channels[j].Name
 	})
-
-	// Filesystem numbers are optional; a failing statfs (e.g. a flaky network mount)
-	// should not hide the rest of the statistics.
-	videosDir := config.GetEnvConfig().VideosDir
-	free, freeErr := utils.GetFreeSpaceOfDirectory(videosDir)
-	total, totalErr := utils.GetTotalSpaceOfDirectory(videosDir)
-	if freeErr != nil || totalErr != nil {
-		log.Warn().Err(fmt.Errorf("free: %v, total: %v", freeErr, totalErr)).Str("videos_dir", videosDir).Msg("error getting videos directory space for public statistics")
-	} else {
-		resp.Storage = &PublicStorageStatistics{
-			UsedBytes:  resp.TotalStorageBytes,
-			FreeBytes:  free,
-			TotalBytes: total,
-		}
-	}
 
 	return resp, nil
 }

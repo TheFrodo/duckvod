@@ -33,13 +33,6 @@ const StatTile = ({ icon, value, label }: { icon: ReactNode; value: string; labe
   </div>
 );
 
-const LegendItem = ({ color, label, value }: { color: string; label: string; value: string }) => (
-  <div className={classes.legendItem}>
-    <span className={classes.legendDot} style={{ background: color }} />
-    <span className={classes.legendLabel}>{label}</span>
-    <span className={classes.legendValue}>{value}</span>
-  </div>
-);
 
 export default function StatisticsPage() {
   const t = useTranslations("StatisticsPage");
@@ -60,8 +53,6 @@ export default function StatisticsPage() {
   const bytes = (value: number) => formatBytesLocale(value, locale);
   const hours = (seconds: number) => number.format(Math.round(seconds / 3600));
 
-  const storage = data.storage;
-  const otherBytes = storage ? Math.max(storage.total_bytes - storage.free_bytes - storage.used_bytes, 0) : 0;
   const types = VIDEO_TYPES
     .map((type) => ({ type, count: data.video_types[type] ?? 0 }))
     .filter((entry) => entry.count > 0);
@@ -88,38 +79,6 @@ export default function StatisticsPage() {
         <StatTile icon={<IconClockHour4 size={26} />} value={hours(data.total_duration_seconds)} label={t("hours")} />
         <StatTile icon={<IconDatabase size={26} />} value={bytes(data.total_storage_bytes)} label={t("archiveSize")} />
       </SimpleGrid>
-
-      {storage && storage.total_bytes > 0 && (
-        <section className={classes.card}>
-          <Title order={2} className={classes.cardTitle}>{t("storageTitle")}</Title>
-          <Text className={classes.cardText}>
-            {t("storageSummary", {
-              used: bytes(storage.total_bytes - storage.free_bytes),
-              total: bytes(storage.total_bytes),
-              percent: number.format(Math.round(percent(storage.total_bytes - storage.free_bytes, storage.total_bytes))),
-            })}
-          </Text>
-          <Progress.Root size={28} radius="xl" className={classes.storageBar}>
-            <Tooltip label={`${t("storageArchive")}: ${bytes(storage.used_bytes)}`}>
-              <Progress.Section value={percent(storage.used_bytes, storage.total_bytes)} color="duck.5" />
-            </Tooltip>
-            <Tooltip label={`${t("storageOther")}: ${bytes(otherBytes)}`}>
-              <Progress.Section value={percent(otherBytes, storage.total_bytes)} color="beak.5" />
-            </Tooltip>
-            <Tooltip label={`${t("storageFree")}: ${bytes(storage.free_bytes)}`}>
-              <Progress.Section value={percent(storage.free_bytes, storage.total_bytes)} color="pool.4" />
-            </Tooltip>
-          </Progress.Root>
-          <div className={classes.legend}>
-            <LegendItem color="var(--mantine-color-duck-5)" label={t("storageArchive")} value={bytes(storage.used_bytes)} />
-            {otherBytes > 0 && (
-              <LegendItem color="var(--mantine-color-beak-5)" label={t("storageOther")} value={bytes(otherBytes)} />
-            )}
-            <LegendItem color="var(--mantine-color-pool-4)" label={t("storageFree")} value={bytes(storage.free_bytes)} />
-            <LegendItem color="transparent" label={t("storageTotal")} value={bytes(storage.total_bytes)} />
-          </div>
-        </section>
-      )}
 
       <div className={classes.columns}>
         {types.length > 0 && (

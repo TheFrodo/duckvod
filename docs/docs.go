@@ -5012,9 +5012,6 @@ const docTemplate = `{
                 "last_streamed_at": {
                     "type": "string"
                 },
-                "storage": {
-                    "$ref": "#/definitions/admin.PublicStorageStatistics"
-                },
                 "total_duration_seconds": {
                     "type": "integer"
                 },
@@ -5205,23 +5202,6 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "video_count": {
-                    "type": "integer"
-                }
-            }
-        },
-        "admin.PublicStorageStatistics": {
-            "type": "object",
-            "properties": {
-                "free_bytes": {
-                    "description": "Free space of the videos filesystem",
-                    "type": "integer"
-                },
-                "total_bytes": {
-                    "description": "Capacity of the videos filesystem",
-                    "type": "integer"
-                },
-                "used_bytes": {
-                    "description": "Tracked video storage",
                     "type": "integer"
                 }
             }

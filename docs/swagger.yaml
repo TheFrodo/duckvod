@@ -12,8 +12,6 @@ definitions:
         type: string
       last_streamed_at:
         type: string
-      storage:
-        $ref: '#/definitions/admin.PublicStorageStatistics'
       total_duration_seconds:
         type: integer
       total_storage_bytes:
@@ -142,18 +140,6 @@ definitions:
       storage_bytes:
         type: integer
       video_count:
-        type: integer
-    type: object
-  admin.PublicStorageStatistics:
-    properties:
-      free_bytes:
-        description: Free space of the videos filesystem
-        type: integer
-      total_bytes:
-        description: Capacity of the videos filesystem
-        type: integer
-      used_bytes:
-        description: Tracked video storage
         type: integer
     type: object
   admin.QueueOverview:
