@@ -3331,6 +3331,35 @@ const docTemplate = `{
                 }
             }
         },
+        "/statistics": {
+            "get": {
+                "description": "Get aggregate archive statistics (videos, channels, duration, storage) for the public statistics page",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "statistics"
+                ],
+                "summary": "Get public archive statistics",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/admin.GetPublicStatisticsResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/task/start": {
             "post": {
                 "security": [
@@ -4965,6 +4994,44 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "admin.GetPublicStatisticsResponse": {
+            "type": "object",
+            "properties": {
+                "channel_count": {
+                    "type": "integer"
+                },
+                "channels": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/admin.PublicChannelStatistics"
+                    }
+                },
+                "first_streamed_at": {
+                    "type": "string"
+                },
+                "last_streamed_at": {
+                    "type": "string"
+                },
+                "storage": {
+                    "$ref": "#/definitions/admin.PublicStorageStatistics"
+                },
+                "total_duration_seconds": {
+                    "type": "integer"
+                },
+                "total_storage_bytes": {
+                    "type": "integer"
+                },
+                "video_count": {
+                    "type": "integer"
+                },
+                "video_types": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
         "admin.GetStorageDistributionResponse": {
             "type": "object",
             "properties": {
@@ -5113,6 +5180,49 @@ const docTemplate = `{
                 },
                 "yt_dlp": {
                     "type": "string"
+                }
+            }
+        },
+        "admin.PublicChannelStatistics": {
+            "type": "object",
+            "properties": {
+                "display_name": {
+                    "type": "string"
+                },
+                "duration_seconds": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "image_path": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "storage_bytes": {
+                    "type": "integer"
+                },
+                "video_count": {
+                    "type": "integer"
+                }
+            }
+        },
+        "admin.PublicStorageStatistics": {
+            "type": "object",
+            "properties": {
+                "free_bytes": {
+                    "description": "Free space of the videos filesystem",
+                    "type": "integer"
+                },
+                "total_bytes": {
+                    "description": "Capacity of the videos filesystem",
+                    "type": "integer"
+                },
+                "used_bytes": {
+                    "description": "Tracked video storage",
+                    "type": "integer"
                 }
             }
         },

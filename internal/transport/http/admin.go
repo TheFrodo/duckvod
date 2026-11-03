@@ -14,6 +14,7 @@ type AdminService interface {
 	GetSystemOverview(ctx context.Context) (admin.GetSystemOverviewResponse, error)
 	GetStorageDistribution(ctx context.Context) (admin.GetStorageDistributionResponse, error)
 	GetInfo(ctx context.Context) (admin.InfoResp, error)
+	GetPublicStatistics(ctx context.Context) (admin.GetPublicStatisticsResponse, error)
 }
 
 // GetVideoStatistics godoc
@@ -90,4 +91,22 @@ func (h *Handler) GetInfo(c echo.Context) error {
 		return ErrorResponse(c, http.StatusInternalServerError, fmt.Sprintf("Error retrieving Ganymede information: %v", err))
 	}
 	return SuccessResponse(c, resp, "Ganymede information")
+}
+
+// GetPublicStatistics godoc
+//
+//	@Summary		Get public archive statistics
+//	@Description	Get aggregate archive statistics (videos, channels, duration, storage) for the public statistics page
+//	@Tags			statistics
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	admin.GetPublicStatisticsResponse
+//	@Failure		500	{object}	utils.ErrorResponse
+//	@Router			/statistics [get]
+func (h *Handler) GetPublicStatistics(c echo.Context) error {
+	resp, err := h.Service.AdminService.GetPublicStatistics(c.Request().Context())
+	if err != nil {
+		return ErrorResponse(c, http.StatusInternalServerError, fmt.Sprintf("Error retrieving statistics: %v", err))
+	}
+	return SuccessResponse(c, resp, "Statistics")
 }

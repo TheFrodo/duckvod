@@ -62,6 +62,7 @@ export function Footer() {
         )}
 
         <nav className={classes.links}>
+          <Link href="/statistiken" className={classes.link} prefetch={false}>Statistiken</Link>
           <Link href="/impressum" className={classes.link}>Impressum</Link>
           <Link href="/datenschutz" className={classes.link}>Datenschutz</Link>
         </nav>

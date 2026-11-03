@@ -314,6 +314,10 @@ func groupV1Routes(e *echo.Group, h *Handler) {
 	archiveGroup.POST("/video", h.ArchiveVideo, AuthAPIKeyOrSessionMiddleware, AuthGetUserMiddleware, RequireRoleOrScope(utils.ArchiverRole, utils.ApiKeyScopeArchiveWrite))
 	archiveGroup.POST("/convert-twitch-live-chat", h.ConvertTwitchChat, AuthAPIKeyOrSessionMiddleware, AuthGetUserMiddleware, RequireRoleOrScope(utils.AdminRole, utils.ApiKeyScopeArchiveAdmin))
 
+	// Public aggregate statistics for the statistics page. Intentionally
+	// unauthenticated; it exposes no paths, users or host details.
+	e.GET("/statistics", h.GetPublicStatistics)
+
 	// Admin: system stats and info.
 	//
 	// Read-only system endpoints accept either a session cookie or an

@@ -55,6 +55,7 @@ Gegenüber dem Original bringt DuckVOD unter anderem mit:
 - 🇩🇪 **Deutsch als Standardsprache** (Englisch und Ukrainisch weiterhin verfügbar).
 - ⚖️ **Impressum und Datenschutzerklärung** als eigene Seiten, auch bei aktivem Login-Zwang erreichbar.
 - 🔎 **SEO** – Meta- und Open-Graph-Tags, `sitemap.xml`, `robots.txt` und strukturierte Daten.
+- 📊 **Statistik-Seite** (`/statistiken`) mit Videos, Kanälen, Laufzeit und Speicherplatz, nicht von Suchmaschinen indexiert.
 - 🧪 **Testversions-Banner** auf Builds aus dem `dev`-Branch.
 
 ## Funktionen

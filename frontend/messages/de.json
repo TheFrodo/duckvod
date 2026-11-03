@@ -14,6 +14,35 @@
     "recentlyArchived": "Kürzlich archiviert",
     "channels": "Kanäle"
   },
+  "StatisticsPage": {
+    "title": "Statistiken",
+    "subtitle": "Ein Blick in den Teich: So viel ist schon archiviert.",
+    "period": "Archiviert von {first} bis {last}",
+    "loading": "Statistiken werden geladen",
+    "error": "Die Statistiken konnten nicht geladen werden.",
+    "videos": "Videos",
+    "channels": "Kanäle",
+    "hours": "Stunden archiviert",
+    "archiveSize": "Archivgröße",
+    "storageTitle": "Speicherplatz",
+    "storageSummary": "{used} von {total} belegt ({percent} %)",
+    "storageArchive": "DuckVOD-Archiv",
+    "storageOther": "Andere Dateien",
+    "storageFree": "Frei",
+    "storageTotal": "Gesamt",
+    "typesTitle": "Videoarten",
+    "channelsTitle": "Kanäle im Detail",
+    "channelVideos": "{count, plural, one {# Video} other {# Videos}}",
+    "channelHours": "{hours} Std.",
+    "channelShare": "{percent} % des Archivs",
+    "types": {
+      "archive": "Archiv",
+      "live": "Live",
+      "highlight": "Highlight",
+      "upload": "Hochgeladen",
+      "clip": "Clip"
+    }
+  },
   "VideosPage": {
     "pageTitle": "Videos",
     "title": "Alle Videos",

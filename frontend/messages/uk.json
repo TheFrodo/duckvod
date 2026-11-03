@@ -4,6 +4,35 @@
     "recentlyArchived": "Нещодавно заархівовані",
     "channels": "Канали"
   },
+  "StatisticsPage": {
+    "title": "Статистика",
+    "subtitle": "Погляд у ставок: стільки вже заархівовано.",
+    "period": "Заархівовано з {first} по {last}",
+    "loading": "Завантаження статистики",
+    "error": "Не вдалося завантажити статистику.",
+    "videos": "Відео",
+    "channels": "Канали",
+    "hours": "Годин в архіві",
+    "archiveSize": "Розмір архіву",
+    "storageTitle": "Сховище",
+    "storageSummary": "Зайнято {used} з {total} ({percent}%)",
+    "storageArchive": "Архів DuckVOD",
+    "storageOther": "Інші файли",
+    "storageFree": "Вільно",
+    "storageTotal": "Усього",
+    "typesTitle": "Типи відео",
+    "channelsTitle": "Канали детально",
+    "channelVideos": "{count, plural, one {# відео} few {# відео} many {# відео} other {# відео}}",
+    "channelHours": "{hours} год",
+    "channelShare": "{percent}% архіву",
+    "types": {
+      "archive": "Архів",
+      "live": "Наживо",
+      "highlight": "Хайлайт",
+      "upload": "Завантажено",
+      "clip": "Кліп"
+    }
+  },
   "VideosPage": {
     "pageTitle": "Відео",
     "title": "Всі відео",

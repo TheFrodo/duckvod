@@ -24,6 +24,7 @@ func TestAdmin(t *testing.T) {
 	t.Run("TestGetVideoStatistics", adminTest.GetVideoStatisticsTest)
 	t.Run("TestGetSystemOverview", adminTest.GetSystemOverviewTest)
 	t.Run("TestGetStorageDistribution", adminTest.GetStorageDistributionTest)
+	t.Run("TestGetPublicStatistics", adminTest.GetPublicStatisticsTest)
 
 }
 
@@ -93,4 +94,40 @@ func (s *AdminTest) GetStorageDistributionTest(t *testing.T) {
 	assert.NotNil(t, resp.StorageDistribution)
 	assert.NotNil(t, resp.StorageByType)
 	assert.NotNil(t, resp.LargestVideos)
+}
+
+// GetPublicStatisticsTest tests the GetPublicStatistics function
+func (s *AdminTest) GetPublicStatisticsTest(t *testing.T) {
+	_, err := s.App.ChannelService.CreateChannel(channel.Channel{
+		ExtID:       "12345678912",
+		Name:        "test_channel3",
+		DisplayName: "Test Channel3",
+		ImagePath:   "/vods/test_channel/test_channel.jpg",
+	})
+	assert.NoError(t, err)
+
+	resp, err := s.App.AdminService.GetPublicStatistics(context.Background())
+	assert.NoError(t, err)
+	assert.Equal(t, 0, resp.VideoCount)
+	assert.GreaterOrEqual(t, resp.ChannelCount, 1)
+	assert.Len(t, resp.Channels, resp.ChannelCount)
+	assert.NotNil(t, resp.VideoTypes)
+	assert.Nil(t, resp.FirstStreamedAt)
+	assert.Nil(t, resp.LastStreamedAt)
+
+	var found bool
+	for _, ch := range resp.Channels {
+		if ch.Name == "test_channel3" {
+			found = true
+			assert.Equal(t, "Test Channel3", ch.DisplayName)
+			assert.Equal(t, 0, ch.VideoCount)
+			assert.Equal(t, int64(0), ch.StorageBytes)
+		}
+	}
+	assert.True(t, found)
+
+	if assert.NotNil(t, resp.Storage) {
+		assert.Greater(t, resp.Storage.TotalBytes, int64(0))
+		assert.GreaterOrEqual(t, resp.Storage.TotalBytes, resp.Storage.FreeBytes)
+	}
 }

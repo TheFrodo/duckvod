@@ -1,7 +1,6 @@
 import { useGetVideoChatHistogram } from "@/app/hooks/useVideos";
 import { BarChart } from '@mantine/charts';
 import { Title } from "@mantine/core";
-import GanymedeLoadingText from "../utils/GanymedeLoadingText";
 import classes from "./ChatHistogram.module.css";
 import { RefObject } from "react";
 import { useTranslations } from "next-intl";
@@ -15,11 +14,9 @@ const VideoChatHistogram = ({ videoId, playerRef }: Props) => {
   const t = useTranslations('VideoComponents')
   const { data, isPending, isError } = useGetVideoChatHistogram(videoId)
 
-  if (isPending) {
-    return <GanymedeLoadingText message={t('loadingChatHistogram')} />
-  }
-  if (isError) {
-    return <div>{t('errorLoadingChatHistogram')}</div>
+  // Hide the whole section while loading or when the video has no usable chat history.
+  if (isPending || isError || !data) {
+    return null
   }
 
   const secondsToHHMM = (seconds: number): string => {
@@ -38,8 +35,8 @@ const VideoChatHistogram = ({ videoId, playerRef }: Props) => {
     Messages: count,
   }));
 
-  if (!result.length) {
-    return <div>{t('errorLoadingChatHistogram')}</div>
+  if (!result.some((point) => Number(point.Messages) > 0)) {
+    return null
   }
 
   return (
