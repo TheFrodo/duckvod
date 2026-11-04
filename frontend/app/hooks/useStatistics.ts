@@ -16,7 +16,6 @@ export interface PublicStatistics {
   channel_count: number;
   total_duration_seconds: number;
   total_storage_bytes: number;
-  video_types: Record<string, number>;
   channels: PublicChannelStatistics[];
   first_streamed_at?: string;
   last_streamed_at?: string;

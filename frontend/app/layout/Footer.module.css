@@ -38,6 +38,32 @@
   color: #a9b5c6;
 }
 
+.changelog {
+  display: inline-flex;
+  align-items: center;
+  gap: rem(8px);
+  margin-top: rem(6px);
+  width: fit-content;
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 800;
+  color: #dfe6ee;
+  text-decoration: none;
+
+  &:hover {
+    color: var(--mantine-color-duck-5);
+  }
+}
+
+.version {
+  font-family: var(--mantine-font-family-monospace);
+  font-size: var(--mantine-font-size-xs);
+  font-weight: 700;
+  color: #1e2a3a;
+  background-color: var(--mantine-color-duck-5);
+  border-radius: rem(999px);
+  padding: rem(1px) rem(8px);
+}
+
 .hosted {
   display: inline-flex;
   align-items: center;

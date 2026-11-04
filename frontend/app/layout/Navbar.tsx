@@ -49,6 +49,7 @@ export function Navbar() {
     { link: '/', label: t('links.home') },
     { link: '/channels', label: t('links.channels') },
     { link: '/videos', label: t('links.videos') },
+    { link: '/statistiken', label: t('links.statistics') },
     {
       link: '/archive',
       label: t('links.archive'),

@@ -13,7 +13,7 @@ const HOSTING_PARTNER = {
   logoDark: "/images/nexosystems-dark.svg",
 };
 
-export function Footer() {
+export function Footer({ latestRelease = null }: { latestRelease?: string | null }) {
   const [lightLogoFailed, setLightLogoFailed] = useState(false);
   const [darkLogoFailed, setDarkLogoFailed] = useState(false);
 
@@ -51,6 +51,10 @@ export function Footer() {
         <div className={classes.brand}>
           <span className={classes.brandText}>Duck<span className={classes.brandAccent}>VOD</span></span>
           <span className={classes.tagline}>Ein Projekt der DuckSquad Community</span>
+          <Link href="/changelog" className={classes.changelog} prefetch={false}>
+            Changelog
+            {latestRelease && <span className={classes.version}>{latestRelease}</span>}
+          </Link>
         </div>
 
         {HOSTING_PARTNER.url ? (

@@ -111,7 +111,6 @@ func (s *AdminTest) GetPublicStatisticsTest(t *testing.T) {
 	assert.Equal(t, 0, resp.VideoCount)
 	assert.GreaterOrEqual(t, resp.ChannelCount, 1)
 	assert.Len(t, resp.Channels, resp.ChannelCount)
-	assert.NotNil(t, resp.VideoTypes)
 	assert.Nil(t, resp.FirstStreamedAt)
 	assert.Nil(t, resp.LastStreamedAt)
 

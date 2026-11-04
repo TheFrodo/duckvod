@@ -10,8 +10,6 @@ import GanymedeLoadingText from "../components/utils/GanymedeLoadingText";
 import { usePublicStatistics } from "../hooks/useStatistics";
 import classes from "./StatisticsPage.module.css";
 
-const VIDEO_TYPES = ["archive", "live", "highlight", "upload", "clip"] as const;
-
 const BYTE_UNITS = ["B", "KiB", "MiB", "GiB", "TiB", "PiB"];
 
 const formatBytesLocale = (bytes: number, locale: string) => {
@@ -53,15 +51,10 @@ export default function StatisticsPage() {
   const bytes = (value: number) => formatBytesLocale(value, locale);
   const hours = (seconds: number) => number.format(Math.round(seconds / 3600));
 
-  const types = VIDEO_TYPES
-    .map((type) => ({ type, count: data.video_types[type] ?? 0 }))
-    .filter((entry) => entry.count > 0);
-  const largestTypeCount = Math.max(...types.map((entry) => entry.count), 1);
-
   return (
     <Container size={1240} className={classes.root}>
       <div className={classes.header}>
-        <Title order={1} className="duck-section-title">{t("title")}</Title>
+        <Title order={1} className="duck-section-title duck-emote-sip">{t("title")}</Title>
         <Text className={classes.subtitle}>{t("subtitle")}</Text>
         {data.first_streamed_at && data.last_streamed_at && (
           <Text className={classes.period}>
@@ -80,60 +73,41 @@ export default function StatisticsPage() {
         <StatTile icon={<IconDatabase size={26} />} value={bytes(data.total_storage_bytes)} label={t("archiveSize")} />
       </SimpleGrid>
 
-      <div className={classes.columns}>
-        {types.length > 0 && (
-          <section className={classes.card}>
-            <Title order={2} className={classes.cardTitle}>{t("typesTitle")}</Title>
-            <div className={classes.typeList}>
-              {types.map(({ type, count }) => (
-                <div key={type} className={classes.typeRow}>
-                  <div className={classes.typeHead}>
-                    <span className={classes.typeName}>{t(`types.${type}`)}</span>
-                    <span className={classes.typeCount}>{number.format(count)}</span>
-                  </div>
-                  <Progress value={percent(count, largestTypeCount)} color="duck.5" size="md" radius="xl" className={classes.bar} />
+      {data.channels.length > 0 && (
+        <section className={classes.card}>
+          <Title order={2} className={classes.cardTitle}>{t("channelsTitle")}</Title>
+          <div className={classes.channelList}>
+            {data.channels.map((channel) => (
+              <div key={channel.id} className={classes.channelRow}>
+                <Link href={`/channels/${channel.name}`} className={classes.channelLink}>
+                  <Avatar
+                    src={`${env("NEXT_PUBLIC_CDN_URL") ?? ""}${channel.image_path}`}
+                    alt={channel.display_name}
+                    size={48}
+                    radius="xl"
+                    className={classes.channelAvatar}
+                  />
+                  <span className={classes.channelName}>{channel.display_name}</span>
+                </Link>
+                <div className={classes.channelStats}>
+                  <span>{t("channelVideos", { count: channel.video_count })}</span>
+                  <span>{t("channelHours", { hours: hours(channel.duration_seconds) })}</span>
+                  <span className={classes.channelStorage}>{bytes(channel.storage_bytes)}</span>
                 </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {data.channels.length > 0 && (
-          <section className={`${classes.card} ${classes.channelsCard}`}>
-            <Title order={2} className={classes.cardTitle}>{t("channelsTitle")}</Title>
-            <div className={classes.channelList}>
-              {data.channels.map((channel) => (
-                <div key={channel.id} className={classes.channelRow}>
-                  <Link href={`/channels/${channel.name}`} className={classes.channelLink}>
-                    <Avatar
-                      src={`${env("NEXT_PUBLIC_CDN_URL") ?? ""}${channel.image_path}`}
-                      alt={channel.display_name}
-                      size={48}
-                      radius="xl"
-                      className={classes.channelAvatar}
-                    />
-                    <span className={classes.channelName}>{channel.display_name}</span>
-                  </Link>
-                  <div className={classes.channelStats}>
-                    <span>{t("channelVideos", { count: channel.video_count })}</span>
-                    <span>{t("channelHours", { hours: hours(channel.duration_seconds) })}</span>
-                    <span className={classes.channelStorage}>{bytes(channel.storage_bytes)}</span>
-                  </div>
-                  <Tooltip label={t("channelShare", { percent: number.format(Math.round(percent(channel.storage_bytes, data.total_storage_bytes))) })}>
-                    <Progress
-                      value={percent(channel.storage_bytes, data.total_storage_bytes)}
-                      color="duck.5"
-                      size="md"
-                      radius="xl"
-                      className={classes.bar}
-                    />
-                  </Tooltip>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-      </div>
+                <Tooltip label={t("channelShare", { percent: number.format(Math.round(percent(channel.storage_bytes, data.total_storage_bytes))) })}>
+                  <Progress
+                    value={percent(channel.storage_bytes, data.total_storage_bytes)}
+                    color="duck.5"
+                    size="md"
+                    radius="xl"
+                    className={classes.bar}
+                  />
+                </Tooltip>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
     </Container>
   );
 }

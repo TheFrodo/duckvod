@@ -5020,12 +5020,6 @@ const docTemplate = `{
                 },
                 "video_count": {
                     "type": "integer"
-                },
-                "video_types": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "integer"
-                    }
                 }
             }
         },

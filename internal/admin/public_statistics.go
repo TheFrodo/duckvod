@@ -24,7 +24,6 @@ type GetPublicStatisticsResponse struct {
 	ChannelCount         int                       `json:"channel_count"`
 	TotalDurationSeconds int64                     `json:"total_duration_seconds"`
 	TotalStorageBytes    int64                     `json:"total_storage_bytes"`
-	VideoTypes           map[string]int            `json:"video_types"`
 	Channels             []PublicChannelStatistics `json:"channels"`
 	FirstStreamedAt      *time.Time                `json:"first_streamed_at,omitempty"`
 	LastStreamedAt       *time.Time                `json:"last_streamed_at,omitempty"`
@@ -33,8 +32,7 @@ type GetPublicStatisticsResponse struct {
 // GetPublicStatistics returns archive statistics for the public statistics page.
 func (s *Service) GetPublicStatistics(ctx context.Context) (GetPublicStatisticsResponse, error) {
 	resp := GetPublicStatisticsResponse{
-		VideoTypes: make(map[string]int),
-		Channels:   make([]PublicChannelStatistics, 0),
+		Channels: make([]PublicChannelStatistics, 0),
 	}
 
 	channels, err := s.Store.Client.Channel.Query().All(ctx)
@@ -60,7 +58,6 @@ func (s *Service) GetPublicStatistics(ctx context.Context) (GetPublicStatisticsR
 		resp.VideoCount++
 		resp.TotalDurationSeconds += int64(vod.Duration)
 		resp.TotalStorageBytes += vod.StorageSizeBytes
-		resp.VideoTypes[string(vod.Type)]++
 
 		if !vod.StreamedAt.IsZero() {
 			streamedAt := vod.StreamedAt

@@ -14,18 +14,18 @@
     "channels": "Канали",
     "hours": "Годин в архіві",
     "archiveSize": "Розмір архіву",
-    "typesTitle": "Типи відео",
     "channelsTitle": "Канали детально",
     "channelVideos": "{count, plural, one {# відео} few {# відео} many {# відео} other {# відео}}",
     "channelHours": "{hours} год",
-    "channelShare": "{percent}% архіву",
-    "types": {
-      "archive": "Архів",
-      "live": "Наживо",
-      "highlight": "Хайлайт",
-      "upload": "Завантажено",
-      "clip": "Кліп"
-    }
+    "channelShare": "{percent}% архіву"
+  },
+  "ChangelogPage": {
+    "title": "Журнал змін",
+    "subtitle": "Усі опубліковані версії DuckVOD і що змінилося.",
+    "latest": "Актуальна",
+    "empty": "Зараз не вдалося завантажити примітки до випусків. Спробуйте пізніше.",
+    "noNotes": "Для цієї версії немає опису.",
+    "viewOnGithub": "Переглянути на GitHub →"
   },
   "VideosPage": {
     "pageTitle": "Відео",
@@ -148,6 +148,7 @@
       "home": "Головна",
       "channels": "Канали",
       "videos": "Відео",
+      "statistics": "Статистика",
       "archive": "Архів",
       "playlists": "Плейлісти",
       "queue": "Черга",

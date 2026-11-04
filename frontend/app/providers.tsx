@@ -135,7 +135,7 @@ const theme = createTheme({
   },
 });
 
-export default function Providers({ children }: { children: React.ReactNode }) {
+export default function Providers({ children, latestRelease = null }: { children: React.ReactNode; latestRelease?: string | null }) {
   const { fetchUser } = useAuthStore()
   const queryClient = getQueryClient()
 
@@ -153,7 +153,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       <QueryClientProvider client={queryClient}>
         {!videoTheaterMode && <Navbar />}
         {children}
-        {!videoTheaterMode && <Footer />}
+        {!videoTheaterMode && <Footer latestRelease={latestRelease} />}
         <ReactQueryDevtools />
       </QueryClientProvider>
     </MantineProvider>

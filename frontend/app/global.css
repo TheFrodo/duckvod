@@ -118,7 +118,8 @@ body {
 
 /* DuckSquad emote variants; slightly larger since the emotes are cropped faces */
 .duck-section-title.duck-emote-peace::before,
-.duck-section-title.duck-emote-note::before {
+.duck-section-title.duck-emote-note::before,
+.duck-section-title.duck-emote-sip::before {
   width: 1.35em;
   height: 1.35em;
   margin-block: -0.15em;
@@ -130,6 +131,10 @@ body {
 
 .duck-section-title.duck-emote-note::before {
   background-image: url("/images/emote-note-96.webp");
+}
+
+.duck-section-title.duck-emote-sip::before {
+  background-image: url("/images/emote-sip-96.webp");
 }
 
 /* dark ink on the yellow primary color, like the DuckSquad buttons */

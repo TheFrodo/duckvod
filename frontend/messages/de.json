@@ -24,18 +24,18 @@
     "channels": "Kanäle",
     "hours": "Stunden archiviert",
     "archiveSize": "Archivgröße",
-    "typesTitle": "Videoarten",
     "channelsTitle": "Kanäle im Detail",
     "channelVideos": "{count, plural, one {# Video} other {# Videos}}",
     "channelHours": "{hours} Std.",
-    "channelShare": "{percent} % des Archivs",
-    "types": {
-      "archive": "Archiv",
-      "live": "Live",
-      "highlight": "Highlight",
-      "upload": "Hochgeladen",
-      "clip": "Clip"
-    }
+    "channelShare": "{percent} % des Archivs"
+  },
+  "ChangelogPage": {
+    "title": "Changelog",
+    "subtitle": "Alle veröffentlichten Versionen von DuckVOD und was sich geändert hat.",
+    "latest": "Aktuell",
+    "empty": "Die Versionshinweise konnten gerade nicht geladen werden. Bitte später erneut versuchen.",
+    "noNotes": "Für diese Version gibt es keine Beschreibung.",
+    "viewOnGithub": "Auf GitHub ansehen →"
   },
   "VideosPage": {
     "pageTitle": "Videos",
@@ -158,6 +158,7 @@
       "home": "Startseite",
       "channels": "Kanäle",
       "videos": "Videos",
+      "statistics": "Statistiken",
       "archive": "Archivieren",
       "playlists": "Wiedergabelisten",
       "queue": "Warteschlange",

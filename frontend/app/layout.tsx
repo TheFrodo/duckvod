@@ -9,6 +9,7 @@ import { ColorSchemeScript } from '@mantine/core';
 import type { Metadata, Viewport } from "next";
 import { getSiteUrl } from './util/siteUrl';
 import Providers from './providers';
+import { getLatestReleaseTag } from './changelog/releases';
 import { EnvScript, PublicEnvScript } from 'next-runtime-env';
 import { getLocale } from 'next-intl/server';
 import { NextIntlClientProvider } from 'next-intl';
@@ -96,6 +97,7 @@ export default async function RootLayout({
 }>) {
 
   const locale = await getLocale()
+  const latestRelease = await getLatestReleaseTag()
 
   return (
     <html lang={locale} suppressHydrationWarning>
@@ -123,7 +125,7 @@ export default async function RootLayout({
 
         <NextIntlClientProvider>
           <TestBanner />
-          <Providers>
+          <Providers latestRelease={latestRelease}>
             {/* ForceLogin prevents rendering the rest of the page if login is required */}
             <ForceLogin>{children}</ForceLogin>
           </Providers>
