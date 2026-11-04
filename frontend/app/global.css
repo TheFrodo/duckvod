@@ -116,6 +116,22 @@ body {
   background: url("/images/ducksquad-mascot-64.webp") center / contain no-repeat;
 }
 
+/* DuckSquad emote variants; slightly larger since the emotes are cropped faces */
+.duck-section-title.duck-emote-peace::before,
+.duck-section-title.duck-emote-note::before {
+  width: 1.35em;
+  height: 1.35em;
+  margin-block: -0.15em;
+}
+
+.duck-section-title.duck-emote-peace::before {
+  background-image: url("/images/emote-peace-96.webp");
+}
+
+.duck-section-title.duck-emote-note::before {
+  background-image: url("/images/emote-note-96.webp");
+}
+
 /* dark ink on the yellow primary color, like the DuckSquad buttons */
 :root[data-mantine-color-scheme] {
   --mantine-primary-color-contrast: #1e2a3a;
