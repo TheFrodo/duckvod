@@ -41,7 +41,7 @@ const VideoChatHistogram = ({ videoId, playerRef }: Props) => {
 
   return (
     <div className={classes.card}>
-      <Title order={2} className="duck-section-title" mb="lg">{t('chatHistogramTitle')}</Title>
+      <Title order={2} className="duck-section-title duck-emote-note" mb="lg">{t('chatHistogramTitle')}</Title>
       <BarChart
         h={300}
         data={result}
