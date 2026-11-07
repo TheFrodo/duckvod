@@ -48,7 +48,7 @@ export default function Home() {
 
       <Box mt="xl" pb="xl">
         <Container size={"7xl"}>
-          <Title order={2} className="duck-section-title duck-emote-note">{t('recentlyArchived')}</Title>
+          <Title order={2} className="duck-section-title duck-emote-lurk">{t('recentlyArchived')}</Title>
         </Container>
         <Container mt="md" size={"7xl"}>
           <RecentlyArchived count={8} />
