@@ -1,0 +1,10 @@
+.panel {
+  width: 340px;
+  max-width: calc(100vw - 32px);
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.item {
+  background-color: var(--mantine-color-body);
+}

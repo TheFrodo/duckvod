@@ -1,10 +1,14 @@
 package http
 
 import (
+	"context"
+	"errors"
+	"io"
 	"mime"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"unicode"
 
@@ -13,34 +17,41 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/zibbp/ganymede/ent"
 	"github.com/zibbp/ganymede/internal/config"
+	"github.com/zibbp/ganymede/internal/download"
 	"github.com/zibbp/ganymede/internal/exec"
 	"github.com/zibbp/ganymede/internal/utils"
 )
 
 const maxDownloadFilenameRunes = 150
 
-// DownloadVod godoc
+type DownloadService interface {
+	Enqueue(vodID uuid.UUID, client, filename string, src *download.Source) (download.Status, error)
+	Status(id uuid.UUID) (download.Status, error)
+	Cancel(id uuid.UUID) error
+	Start(ctx context.Context, id uuid.UUID) (*download.Lease, error)
+}
+
+// CreateVodDownload godoc
 //
-//	@Summary		Download a vod as MP4
-//	@Description	Streams the archived video as an MP4 file. HLS archives are remuxed on the fly without re-encoding, so the response has no Content-Length and cannot be resumed.
-//	@Tags			vods
-//	@Produce		video/mp4
+//	@Summary		Queue a vod download
+//	@Description	Creates a download ticket. Only a limited number of downloads run at once; poll the ticket until it is ready, then fetch its file.
+//	@Tags			downloads
+//	@Produce		json
 //	@Param			id	path		string	true	"Vod ID"
-//	@Success		200	{file}		file
+//	@Success		200	{object}	download.Status
 //	@Failure		400	{object}	utils.ErrorResponse
 //	@Failure		403	{object}	utils.ErrorResponse
 //	@Failure		404	{object}	utils.ErrorResponse
 //	@Failure		409	{object}	utils.ErrorResponse
-//	@Failure		500	{object}	utils.ErrorResponse
-//	@Router			/vod/{id}/download [get]
-//	@Security		ApiKeyAuth
-func (h *Handler) DownloadVod(c echo.Context) error {
+//	@Failure		429	{object}	utils.ErrorResponse
+//	@Failure		503	{object}	utils.ErrorResponse
+//	@Router			/vod/{id}/download [post]
+func (h *Handler) CreateVodDownload(c echo.Context) error {
 	vID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		return ErrorResponse(c, http.StatusBadRequest, err.Error())
 	}
-	ctx := c.Request().Context()
-	video, err := h.Service.VodService.GetVod(ctx, vID, true, false, false, false)
+	video, err := h.Service.VodService.GetVod(c.Request().Context(), vID, true, false, false, false)
 	if err != nil {
 		if err.Error() == "vod not found" {
 			return ErrorResponse(c, http.StatusNotFound, err.Error())
@@ -52,56 +63,160 @@ func (h *Handler) DownloadVod(c echo.Context) error {
 	}
 
 	videoPath := filepath.Clean(video.VideoPath)
-	if !pathWithin(config.GetEnvConfig().VideosDir, videoPath) {
+	if !download.PathWithin(config.GetEnvConfig().VideosDir, videoPath) {
 		log.Warn().Str("vod_id", vID.String()).Str("path", videoPath).Msg("refusing download outside videos directory")
 		return ErrorResponse(c, http.StatusForbidden, "video path is outside the videos directory")
 	}
-	info, err := os.Stat(videoPath)
-	if err != nil || !info.Mode().IsRegular() {
-		return ErrorResponse(c, http.StatusNotFound, "video file not found")
+	src, err := download.Resolve(videoPath)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return ErrorResponse(c, http.StatusNotFound, "video file not found")
+		}
+		log.Error().Err(err).Str("vod_id", vID.String()).Msg("failed to prepare vod download")
+		return ErrorResponse(c, http.StatusInternalServerError, "failed to prepare video download")
 	}
 
-	disposition := mime.FormatMediaType("attachment", map[string]string{"filename": downloadFilename(video)})
-	c.Response().Header().Set(echo.HeaderContentDisposition, disposition)
-
-	if !strings.EqualFold(filepath.Ext(videoPath), ".m3u8") {
-		// Direct files support Range requests and resuming.
-		return c.File(videoPath)
+	status, err := h.Service.DownloadService.Enqueue(vID, c.RealIP(), downloadFilename(video), src)
+	switch {
+	case errors.Is(err, download.ErrClientLimit):
+		return ErrorResponse(c, http.StatusTooManyRequests, err.Error())
+	case errors.Is(err, download.ErrQueueFull):
+		return ErrorResponse(c, http.StatusServiceUnavailable, err.Error())
+	case err != nil:
+		return ErrorResponse(c, http.StatusInternalServerError, err.Error())
 	}
+	return SuccessResponse(c, status, "download queued")
+}
 
-	// The response is committed on ffmpeg's first write.
+// GetDownload godoc
+//
+//	@Summary		Get download ticket status
+//	@Description	Returns queue position or transfer progress. Polling keeps a queued ticket alive.
+//	@Tags			downloads
+//	@Produce		json
+//	@Param			id	path		string	true	"Download ticket ID"
+//	@Success		200	{object}	download.Status
+//	@Failure		400	{object}	utils.ErrorResponse
+//	@Failure		404	{object}	utils.ErrorResponse
+//	@Router			/download/{id} [get]
+func (h *Handler) GetDownload(c echo.Context) error {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		return ErrorResponse(c, http.StatusBadRequest, err.Error())
+	}
+	status, err := h.Service.DownloadService.Status(id)
+	if err != nil {
+		return downloadErrorResponse(c, err)
+	}
+	return SuccessResponse(c, status, "download status")
+}
+
+// CancelDownload godoc
+//
+//	@Summary		Cancel a download
+//	@Tags			downloads
+//	@Produce		json
+//	@Param			id	path		string	true	"Download ticket ID"
+//	@Success		200	{object}	nil
+//	@Failure		400	{object}	utils.ErrorResponse
+//	@Failure		404	{object}	utils.ErrorResponse
+//	@Router			/download/{id} [delete]
+func (h *Handler) CancelDownload(c echo.Context) error {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		return ErrorResponse(c, http.StatusBadRequest, err.Error())
+	}
+	if err := h.Service.DownloadService.Cancel(id); err != nil {
+		return downloadErrorResponse(c, err)
+	}
+	return SuccessResponse(c, nil, "download canceled")
+}
+
+// GetDownloadFile godoc
+//
+//	@Summary		Download the MP4 file of a ready ticket
+//	@Description	Streams the video as MP4. Concatenable fMP4 archives have an exact Content-Length; other HLS archives are remuxed by ffmpeg without re-encoding. Each ticket can be started once.
+//	@Tags			downloads
+//	@Produce		video/mp4
+//	@Param			id	path	string	true	"Download ticket ID"
+//	@Success		200	{file}	file
+//	@Failure		400	{object}	utils.ErrorResponse
+//	@Failure		404	{object}	utils.ErrorResponse
+//	@Failure		409	{object}	utils.ErrorResponse
+//	@Router			/download/{id}/file [get]
+func (h *Handler) GetDownloadFile(c echo.Context) error {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		return ErrorResponse(c, http.StatusBadRequest, err.Error())
+	}
+	lease, err := h.Service.DownloadService.Start(c.Request().Context(), id)
+	if err != nil {
+		return downloadErrorResponse(c, err)
+	}
+	logger := log.With().Str("download_id", id.String()).Str("path", lease.Source.Path).Logger()
+
 	res := c.Response()
 	res.Header().Set(echo.HeaderContentType, "video/mp4")
+	res.Header().Set(echo.HeaderContentDisposition, mime.FormatMediaType("attachment", map[string]string{"filename": lease.Filename}))
 	res.Header().Set("X-Accel-Buffering", "no")
+	res.Header().Set(echo.HeaderCacheControl, "no-store")
 
-	err = exec.StreamHlsAsMp4(ctx, videoPath, video.Title, res)
+	ctx := lease.Context()
+	if lease.Source.Remux {
+		// The response is committed on ffmpeg's first write.
+		err = exec.StreamHlsAsMp4(ctx, lease.Source.Path, strings.TrimSuffix(lease.Filename, ".mp4"), lease.Writer(res))
+	} else {
+		var reader io.ReadCloser
+		reader, err = lease.Source.Open()
+		if err == nil {
+			res.Header().Set(echo.HeaderContentLength, strconv.FormatInt(lease.Source.Size, 10))
+			res.WriteHeader(http.StatusOK)
+			_, err = io.Copy(lease.Writer(res), &contextReader{ctx: ctx, r: reader})
+			_ = reader.Close()
+		}
+	}
+	lease.Finish(err)
+
 	switch {
 	case err == nil:
+		logger.Info().Int64("bytes", lease.BytesSent()).Msg("vod download completed")
 		return nil
-	case exec.IsCanceled(err):
-		log.Debug().Str("vod_id", vID.String()).Msg("vod download canceled by client")
+	case exec.IsCanceled(err) || ctx.Err() != nil:
+		logger.Debug().Int64("bytes", lease.BytesSent()).Msg("vod download aborted")
 		return nil
 	case !res.Committed:
-		log.Error().Err(err).Str("vod_id", vID.String()).Msg("vod download failed before streaming")
+		logger.Error().Err(err).Msg("vod download failed before streaming")
 		res.Header().Del(echo.HeaderContentDisposition)
-		return ErrorResponse(c, http.StatusInternalServerError, "failed to prepare video download")
+		return ErrorResponse(c, http.StatusInternalServerError, "failed to stream video download")
 	default:
 		// Headers are already sent; the client sees a truncated download.
-		log.Error().Err(err).Str("vod_id", vID.String()).Msg("vod download failed while streaming")
+		logger.Error().Err(err).Int64("bytes", lease.BytesSent()).Msg("vod download failed while streaming")
 		return nil
 	}
 }
 
-// pathWithin reports whether target lies inside base after cleaning both.
-func pathWithin(base, target string) bool {
-	if base == "" {
-		return false
+func downloadErrorResponse(c echo.Context, err error) error {
+	switch {
+	case errors.Is(err, download.ErrNotFound):
+		return ErrorResponse(c, http.StatusNotFound, err.Error())
+	case errors.Is(err, download.ErrNotReady):
+		return ErrorResponse(c, http.StatusConflict, err.Error())
+	default:
+		return ErrorResponse(c, http.StatusInternalServerError, err.Error())
 	}
-	rel, err := filepath.Rel(filepath.Clean(base), filepath.Clean(target))
-	if err != nil {
-		return false
+}
+
+// contextReader stops a copy once the download is canceled.
+type contextReader struct {
+	ctx context.Context
+	r   io.Reader
+}
+
+func (r *contextReader) Read(p []byte) (int, error) {
+	if err := r.ctx.Err(); err != nil {
+		return 0, err
 	}
-	return rel != "." && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator)) && !filepath.IsAbs(rel)
+	return r.r.Read(p)
 }
 
 // downloadFilename returns "<channel> - <YYYY-MM-DD> - <title>.mp4" with

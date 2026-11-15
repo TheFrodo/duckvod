@@ -171,6 +171,8 @@ Die `docker-compose.yml` enthält Kommentare zu jeder Variable. Eine vollständi
 | `MAX_VIDEO_SPRITE_THUMBNAIL_EXECUTIONS` | Maximale Anzahl gleichzeitiger Sprite-Thumbnail-Jobs. Ressourcenverbrauch gering.                                                                                                  |
 | `DISABLE_LIVE_ARCHIVE_STALL_CHECK`      | Erkennung hängender Live-Aufnahmen (anhand des FFmpeg-Fortschritts) deaktivieren. Standard: `false`.                                                                               |
 | `LIVE_ARCHIVE_STALL_TIMEOUT_SECONDS`    | Sekunden ohne FFmpeg-Fortschritt, bevor eine Live-Aufnahme gestoppt wird. Standard: `180`; Werte unter `30` nutzen den Standard.                                                   |
+| `MAX_CONCURRENT_DOWNLOADS`              | Maximale Anzahl gleichzeitiger VOD-Downloads (MP4) über die Webseite. Weitere Downloads warten in einer Warteschlange. Standard: `3`.                                               |
+| `MAX_DOWNLOADS_PER_CLIENT`              | Maximale Anzahl laufender oder wartender Downloads pro IP-Adresse. Standard: `2`.                                                                                                  |
 
 ##### Frontend
 

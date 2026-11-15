@@ -9,6 +9,7 @@ import classes from "./TitleBar.module.css";
 import { IconCalendarEvent, IconDatabase, IconLock, IconNotes, IconUser, IconUsers } from "@tabler/icons-react";
 import dayjs from "dayjs";
 import VideoMenu from "./Menu";
+import VideoDownloadButton from "../downloads/DownloadButton";
 import useAuthStore from "@/app/store/useAuthStore";
 import { UserRole } from "@/app/hooks/useAuthentication";
 import Link from "next/link";
@@ -147,6 +148,8 @@ const VideoTitleBar = ({ video, onEditNotes }: Params) => {
               </Button>
             </Box>
           )}
+
+          <VideoDownloadButton video={video} />
 
           {hasPermission(UserRole.Archiver) && (
             <Box mt={5}>

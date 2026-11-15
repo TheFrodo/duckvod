@@ -10,6 +10,7 @@ import { Footer } from './layout/Footer';
 import useSettingsStore from './store/useSettingsStore';
 import { useEffect } from 'react';
 import useAuthStore from './store/useAuthStore'
+import DownloadPanel from './components/downloads/DownloadPanel'
 import { Fredoka, Nunito, JetBrains_Mono } from 'next/font/google'
 // fonts match the DuckSquad website (ducksquad.de)
 const headingFont = Fredoka({
@@ -154,6 +155,7 @@ export default function Providers({ children, latestRelease = null }: { children
         {!videoTheaterMode && <Navbar />}
         {children}
         {!videoTheaterMode && <Footer latestRelease={latestRelease} />}
+        <DownloadPanel />
         <ReactQueryDevtools />
       </QueryClientProvider>
     </MantineProvider>

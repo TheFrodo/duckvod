@@ -1183,5 +1183,26 @@
   "TestBanner": {
     "label": "Test version",
     "text": "This is a test version of DuckVOD. Features may be unfinished and errors can occur."
+  },
+  "Downloads": {
+    "title": "Downloads",
+    "button": "Download",
+    "queued": "Waiting in queue: position {position}",
+    "keepTabOpen": "Keep this tab open, otherwise your place expires.",
+    "ready": "Ready, download is starting…",
+    "startButton": "Start download",
+    "progress": "{sent} of {total}",
+    "progressEstimated": "{sent} of approx. {total}",
+    "completed": "Done",
+    "failed": "Download was interrupted",
+    "expired": "Expired, please try again",
+    "canceled": "Canceled",
+    "cancel": "Cancel",
+    "dismiss": "Remove",
+    "queuedNotification": "Download added to the queue",
+    "errorTitle": "Download not possible",
+    "limitError": "You already have the maximum number of downloads queued. Please wait until one is finished.",
+    "busyError": "The download queue is full right now. Please try again later.",
+    "genericError": "The download could not be started."
   }
 }

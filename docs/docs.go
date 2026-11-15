@@ -1507,6 +1507,129 @@ const docTemplate = `{
                 }
             }
         },
+        "/download/{id}": {
+            "get": {
+                "description": "Returns queue position or transfer progress. Polling keeps a queued ticket alive.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "downloads"
+                ],
+                "summary": "Get download ticket status",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Download ticket ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/download.Status"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "downloads"
+                ],
+                "summary": "Cancel a download",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Download ticket ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/download/{id}/file": {
+            "get": {
+                "description": "Streams the video as MP4. Concatenable fMP4 archives have an exact Content-Length; other HLS archives are remuxed by ffmpeg without re-encoding. Each ticket can be started once.",
+                "produces": [
+                    "video/mp4"
+                ],
+                "tags": [
+                    "downloads"
+                ],
+                "summary": "Download the MP4 file of a ready ticket",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Download ticket ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/live": {
             "get": {
                 "security": [
@@ -4620,6 +4743,71 @@ const docTemplate = `{
                 }
             }
         },
+        "/vod/{id}/download": {
+            "post": {
+                "description": "Creates a download ticket. Only a limited number of downloads run at once; poll the ticket until it is ready, then fetch its file.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "downloads"
+                ],
+                "summary": "Queue a vod download",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Vod ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/download.Status"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "429": {
+                        "description": "Too Many Requests",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/vod/{id}/ffprobe": {
             "post": {
                 "security": [
@@ -5685,6 +5873,57 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "folder_template": {
+                    "type": "string"
+                }
+            }
+        },
+        "download.State": {
+            "type": "string",
+            "enum": [
+                "queued",
+                "ready",
+                "downloading",
+                "completed",
+                "failed",
+                "expired",
+                "canceled"
+            ],
+            "x-enum-varnames": [
+                "StateQueued",
+                "StateReady",
+                "StateDownloading",
+                "StateCompleted",
+                "StateFailed",
+                "StateExpired",
+                "StateCanceled"
+            ]
+        },
+        "download.Status": {
+            "type": "object",
+            "properties": {
+                "bytes_sent": {
+                    "type": "integer"
+                },
+                "filename": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "position": {
+                    "description": "1-based while queued, otherwise 0",
+                    "type": "integer"
+                },
+                "size_estimated": {
+                    "type": "boolean"
+                },
+                "state": {
+                    "$ref": "#/definitions/download.State"
+                },
+                "total_bytes": {
+                    "type": "integer"
+                },
+                "vod_id": {
                     "type": "string"
                 }
             }

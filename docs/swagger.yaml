@@ -466,6 +466,44 @@ definitions:
       folder_template:
         type: string
     type: object
+  download.State:
+    enum:
+    - queued
+    - ready
+    - downloading
+    - completed
+    - failed
+    - expired
+    - canceled
+    type: string
+    x-enum-varnames:
+    - StateQueued
+    - StateReady
+    - StateDownloading
+    - StateCompleted
+    - StateFailed
+    - StateExpired
+    - StateCanceled
+  download.Status:
+    properties:
+      bytes_sent:
+        type: integer
+      filename:
+        type: string
+      id:
+        type: string
+      position:
+        description: 1-based while queued, otherwise 0
+        type: integer
+      size_estimated:
+        type: boolean
+      state:
+        $ref: '#/definitions/download.State'
+      total_bytes:
+        type: integer
+      vod_id:
+        type: string
+    type: object
   ent.BlockedVideos:
     properties:
       created_at:
@@ -3521,6 +3559,90 @@ paths:
       summary: Update config
       tags:
       - config
+  /download/{id}:
+    delete:
+      parameters:
+      - description: Download ticket ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Cancel a download
+      tags:
+      - downloads
+    get:
+      description: Returns queue position or transfer progress. Polling keeps a queued
+        ticket alive.
+      parameters:
+      - description: Download ticket ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/download.Status'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Get download ticket status
+      tags:
+      - downloads
+  /download/{id}/file:
+    get:
+      description: Streams the video as MP4. Concatenable fMP4 archives have an exact
+        Content-Length; other HLS archives are remuxed by ffmpeg without re-encoding.
+        Each ticket can be started once.
+      parameters:
+      - description: Download ticket ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - video/mp4
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Download the MP4 file of a ready ticket
+      tags:
+      - downloads
   /live:
     get:
       consumes:
@@ -5399,6 +5521,50 @@ paths:
       summary: Get clips of a vod
       tags:
       - vods
+  /vod/{id}/download:
+    post:
+      description: Creates a download ticket. Only a limited number of downloads run
+        at once; poll the ticket until it is ready, then fetch its file.
+      parameters:
+      - description: Vod ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/download.Status'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "429":
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Queue a vod download
+      tags:
+      - downloads
   /vod/{id}/ffprobe:
     post:
       consumes:

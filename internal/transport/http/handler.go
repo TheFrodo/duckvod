@@ -23,6 +23,7 @@ import (
 	"github.com/zibbp/ganymede/internal/api_key"
 	"github.com/zibbp/ganymede/internal/config"
 	"github.com/zibbp/ganymede/internal/database"
+	"github.com/zibbp/ganymede/internal/download"
 	"github.com/zibbp/ganymede/internal/platform"
 	"github.com/zibbp/ganymede/internal/utils"
 	"riverqueue.com/riverui"
@@ -47,6 +48,7 @@ type Services struct {
 	NotificationService NotificationService
 	ApiKeyService       ApiKeyService
 	PlatformTwitch      platform.Platform
+	DownloadService     DownloadService
 }
 
 type Handler struct {
@@ -101,6 +103,11 @@ func NewHandler(database *database.Database, authService AuthService, channelSer
 			NotificationService: notificationService,
 			ApiKeyService:       apiKeySvc,
 			PlatformTwitch:      platformTwitch,
+			// In-memory and API-only, so it is not part of the shared service graph.
+			DownloadService: download.NewManager(download.Options{
+				MaxActive:    envConfig.MaxConcurrentDownloads,
+				MaxPerClient: envConfig.MaxDownloadsPerClient,
+			}),
 		},
 		SessionManager: sessionManager,
 		RiverUIServer:  riverUIServer,
@@ -119,7 +126,7 @@ func NewHandler(database *database.Database, authService AuthService, channelSer
 		Skipper: func(c echo.Context) bool {
 			path := c.Request().URL.Path
 			// Video downloads are already compressed and may use Range requests.
-			return !strings.HasPrefix(path, "/api/") || (strings.HasPrefix(path, "/api/v1/vod/") && strings.HasSuffix(path, "/download"))
+			return !strings.HasPrefix(path, "/api/") || (strings.HasPrefix(path, "/api/v1/download/") && strings.HasSuffix(path, "/file"))
 		},
 	}))
 
@@ -279,8 +286,16 @@ func groupV1Routes(e *echo.Group, h *Handler) {
 	vodGroup.POST("/:id/generate-static-thumbnail", h.GenerateStaticThumbnail, AuthAPIKeyOrSessionMiddleware, AuthGetUserMiddleware, RequireRoleOrScope(utils.EditorRole, utils.ApiKeyScopeVodWrite))
 	vodGroup.POST("/:id/generate-sprite-thumbnails", h.GenerateSpriteThumbnails, AuthAPIKeyOrSessionMiddleware, AuthGetUserMiddleware, RequireRoleOrScope(utils.EditorRole, utils.ApiKeyScopeVodWrite))
 	vodGroup.GET("/:id/thumbnails/vtt", h.GetVodSpriteThumbnails)
-	vodGroup.GET("/:id/download", h.DownloadVod, AuthAPIKeyOrSessionMiddleware, AuthGetUserMiddleware, RequireRoleOrScope(utils.UserRole, utils.ApiKeyScopeVodRead))
+	// Downloads are intentionally public; the download manager limits
+	// concurrency and per-client tickets to protect bandwidth.
+	vodGroup.POST("/:id/download", h.CreateVodDownload)
 	vodGroup.POST("/:id/ffprobe", h.GetFFprobe, AuthAPIKeyOrSessionMiddleware, AuthGetUserMiddleware, RequireRoleOrScope(utils.ArchiverRole, utils.ApiKeyScopeVodWrite))
+
+	// Download tickets. Public; the ticket UUID is the capability.
+	downloadGroup := e.Group("/download")
+	downloadGroup.GET("/:id", h.GetDownload)
+	downloadGroup.DELETE("/:id", h.CancelDownload)
+	downloadGroup.GET("/:id/file", h.GetDownloadFile)
 
 	// Queue
 	//

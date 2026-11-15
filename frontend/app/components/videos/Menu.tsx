@@ -16,7 +16,7 @@ import {
   IconPlayerStop,
   IconDownload,
 } from '@tabler/icons-react';
-import { env } from 'next-runtime-env';
+import useStartVideoDownload from '../downloads/useStartVideoDownload';
 import VideoInfoModalContent from './modals/InfoModalContent';
 import { useGenerateSpriteThumbnails, useGenerateStaticThumbnail, useLockVideo, Video, VideoType } from '@/app/hooks/useVideos';
 import PlaylistManageDrawerContent from '../playlist/ManageDrawerContent';
@@ -47,6 +47,7 @@ const VideoMenu = ({ video }: Props) => {
   const axiosPrivate = useAxiosPrivate()
   const isLocked = useRef(false);
   const { hasPermission } = useAuthStore()
+  const { start: startDownload, isPending: isDownloadPending } = useStartVideoDownload()
 
   useEffect(() => {
     if (video.locked) {
@@ -221,12 +222,10 @@ const VideoMenu = ({ video }: Props) => {
             {t('menu.share')}
           </Menu.Item>
           {video.status === ArchiveStatus.Completed && (
-            // Plain navigation so the browser streams the file to disk with its own progress UI.
             <Menu.Item
-              component="a"
-              href={`${env('NEXT_PUBLIC_API_URL') ?? ''}/api/v1/vod/${video.id}/download`}
-              download
               leftSection={<IconDownload style={{ width: rem(14), height: rem(14) }} />}
+              onClick={() => startDownload(video)}
+              disabled={isDownloadPending}
             >
               {t('menu.download')}
             </Menu.Item>

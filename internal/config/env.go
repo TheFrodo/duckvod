@@ -44,6 +44,10 @@ type EnvConfig struct {
 	DisableLiveArchiveStallCheck      bool `env:"DISABLE_LIVE_ARCHIVE_STALL_CHECK, default=false"`
 	LiveArchiveStallTimeoutSeconds    int  `env:"LIVE_ARCHIVE_STALL_TIMEOUT_SECONDS, default=180"`
 
+	// public VOD downloads (API process)
+	MaxConcurrentDownloads int `env:"MAX_CONCURRENT_DOWNLOADS, default=3"`
+	MaxDownloadsPerClient  int `env:"MAX_DOWNLOADS_PER_CLIENT, default=2"`
+
 	// oauth OIDC
 	OAuthEnabled      bool   `env:"OAUTH_ENABLED, default=false"`
 	OAuthProviderURL  string `env:"OAUTH_PROVIDER_URL, default="`

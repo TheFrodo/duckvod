@@ -34,6 +34,9 @@ services:
       - MAX_VIDEO_SPRITE_THUMBNAIL_EXECUTIONS=2
       # - DISABLE_LIVE_ARCHIVE_STALL_CHECK=false # Set true to disable FFmpeg progress stall detection
       # - LIVE_ARCHIVE_STALL_TIMEOUT_SECONDS=180 # Minimum 30 seconds
+      # Public MP4 downloads: parallel transfers and queued/running tickets per IP
+      # - MAX_CONCURRENT_DOWNLOADS=3
+      # - MAX_DOWNLOADS_PER_CLIENT=2
       # Optional OAuth settings
       # - OAUTH_ENABLED=false
       # - OAUTH_PROVIDER_URL=
