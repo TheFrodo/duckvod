@@ -14,7 +14,9 @@ import {
   IconLock,
   IconMovie,
   IconPlayerStop,
+  IconDownload,
 } from '@tabler/icons-react';
+import { env } from 'next-runtime-env';
 import VideoInfoModalContent from './modals/InfoModalContent';
 import { useGenerateSpriteThumbnails, useGenerateStaticThumbnail, useLockVideo, Video, VideoType } from '@/app/hooks/useVideos';
 import PlaylistManageDrawerContent from '../playlist/ManageDrawerContent';
@@ -218,6 +220,17 @@ const VideoMenu = ({ video }: Props) => {
           <Menu.Item leftSection={<IconShare style={{ width: rem(14), height: rem(14) }} />} onClick={handleShareVideo}>
             {t('menu.share')}
           </Menu.Item>
+          {video.status === ArchiveStatus.Completed && (
+            // Plain navigation so the browser streams the file to disk with its own progress UI.
+            <Menu.Item
+              component="a"
+              href={`${env('NEXT_PUBLIC_API_URL') ?? ''}/api/v1/vod/${video.id}/download`}
+              download
+              leftSection={<IconDownload style={{ width: rem(14), height: rem(14) }} />}
+            >
+              {t('menu.download')}
+            </Menu.Item>
+          )}
 
           {hasPermission(UserRole.Admin) && (
             <>

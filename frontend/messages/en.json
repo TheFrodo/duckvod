@@ -934,6 +934,7 @@
       "regenerateThumbnails": "Regenerate Thumbnails",
       "generateSpriteThumbnails": "Generate Sprite Thumbnails",
       "share": "Share",
+      "download": "Download MP4",
       "delete": "Delete Video"
     },
     "selectForBulkTooltip": "Select for bulk actions",

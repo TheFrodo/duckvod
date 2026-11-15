@@ -934,6 +934,7 @@
       "regenerateThumbnails": "Thumbnails neu erstellen",
       "generateSpriteThumbnails": "Sprite-Thumbnails erstellen",
       "share": "Teilen",
+      "download": "Als MP4 herunterladen",
       "delete": "Video löschen"
     },
     "selectForBulkTooltip": "Für Massenaktionen auswählen",

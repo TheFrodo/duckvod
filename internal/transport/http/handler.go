@@ -117,7 +117,9 @@ func NewHandler(database *database.Database, authService AuthService, channelSer
 	// outer layer — leaving raw gzip bytes as the page body.
 	h.Server.Use(middleware.GzipWithConfig(middleware.GzipConfig{
 		Skipper: func(c echo.Context) bool {
-			return !strings.HasPrefix(c.Request().URL.Path, "/api/")
+			path := c.Request().URL.Path
+			// Video downloads are already compressed and may use Range requests.
+			return !strings.HasPrefix(path, "/api/") || (strings.HasPrefix(path, "/api/v1/vod/") && strings.HasSuffix(path, "/download"))
 		},
 	}))
 
@@ -277,6 +279,7 @@ func groupV1Routes(e *echo.Group, h *Handler) {
 	vodGroup.POST("/:id/generate-static-thumbnail", h.GenerateStaticThumbnail, AuthAPIKeyOrSessionMiddleware, AuthGetUserMiddleware, RequireRoleOrScope(utils.EditorRole, utils.ApiKeyScopeVodWrite))
 	vodGroup.POST("/:id/generate-sprite-thumbnails", h.GenerateSpriteThumbnails, AuthAPIKeyOrSessionMiddleware, AuthGetUserMiddleware, RequireRoleOrScope(utils.EditorRole, utils.ApiKeyScopeVodWrite))
 	vodGroup.GET("/:id/thumbnails/vtt", h.GetVodSpriteThumbnails)
+	vodGroup.GET("/:id/download", h.DownloadVod, AuthAPIKeyOrSessionMiddleware, AuthGetUserMiddleware, RequireRoleOrScope(utils.UserRole, utils.ApiKeyScopeVodRead))
 	vodGroup.POST("/:id/ffprobe", h.GetFFprobe, AuthAPIKeyOrSessionMiddleware, AuthGetUserMiddleware, RequireRoleOrScope(utils.ArchiverRole, utils.ApiKeyScopeVodWrite))
 
 	// Queue
