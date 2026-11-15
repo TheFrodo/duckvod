@@ -11,6 +11,7 @@ export type Release = {
   body: string;
   publishedAt: string;
   url: string;
+  prerelease: boolean;
 };
 
 type GitHubRelease = {
@@ -25,7 +26,7 @@ type GitHubRelease = {
 };
 
 // Fetched on the server and cached for an hour, so visitors never contact GitHub
-// directly and the anonymous API rate limit is not an issue.
+// directly and the anonymous API rate limit is not an issue. Includes pre-releases.
 export async function getMainReleases(): Promise<Release[]> {
   try {
     const response = await fetch(`https://api.github.com/repos/${CHANGELOG_REPO}/releases?per_page=50`, {
@@ -37,20 +38,32 @@ export async function getMainReleases(): Promise<Release[]> {
 
     const releases = (await response.json()) as GitHubRelease[];
     return releases
-      .filter((r) => !r.draft && !r.prerelease && RELEASE_BRANCHES.includes(r.target_commitish))
+      .filter((r) => !r.draft && RELEASE_BRANCHES.includes(r.target_commitish))
       .map((r) => ({
         tag: r.tag_name,
         name: r.name?.trim() || r.tag_name,
         body: r.body?.trim() ?? "",
         publishedAt: r.published_at ?? "",
         url: r.html_url,
+        prerelease: r.prerelease,
       }));
   } catch {
     return [];
   }
 }
 
+/** Latest full release; pre-releases never count as the current version. */
 export async function getLatestReleaseTag(): Promise<string | null> {
   const releases = await getMainReleases();
-  return releases[0]?.tag ?? null;
+  return releases.find((r) => !r.prerelease)?.tag ?? null;
+}
+
+/**
+ * Whether this build's tag is published as a pre-release. Promoting the release
+ * on GitHub clears this after the cache expires, without a new image.
+ */
+export async function isPrereleaseBuild(tag: string | undefined): Promise<boolean> {
+  if (!tag) return false;
+  const releases = await getMainReleases();
+  return releases.some((r) => r.prerelease && r.tag === tag);
 }

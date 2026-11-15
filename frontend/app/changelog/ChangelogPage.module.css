@@ -81,6 +81,29 @@
   padding: rem(2px) rem(10px);
 }
 
+.prerelease {
+  font-size: var(--mantine-font-size-xs);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #ffffff;
+  background-color: #1e2a3a;
+  border: rem(2px) solid var(--ds-line);
+  border-radius: rem(999px);
+  padding: rem(2px) rem(10px);
+}
+
+/* caution-tape edge matching the pre-release site banner */
+.prereleaseNotice {
+  margin: 0 0 var(--mantine-spacing-sm);
+  padding: rem(8px) rem(12px);
+  border: rem(2px) solid var(--ds-line);
+  border-left: rem(10px) solid var(--mantine-color-duck-5);
+  border-radius: rem(10px);
+  font-weight: 700;
+  font-size: var(--mantine-font-size-sm);
+}
+
 .date {
   margin-left: auto;
   font-family: var(--mantine-font-family-monospace);

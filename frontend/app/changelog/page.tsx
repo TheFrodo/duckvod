@@ -17,6 +17,7 @@ export default async function ChangelogPage() {
   const t = await getTranslations("ChangelogPage");
   const locale = await getLocale();
   const releases = await getMainReleases();
+  const latestTag = releases.find((r) => !r.prerelease)?.tag;
   const date = new Intl.DateTimeFormat(locale, { day: "2-digit", month: "2-digit", year: "numeric" });
 
   return (
@@ -30,18 +31,23 @@ export default async function ChangelogPage() {
         <div className={classes.card}>{t("empty")}</div>
       ) : (
         <ol className={classes.timeline}>
-          {releases.map((release, index) => (
+          {releases.map((release) => (
             <li key={release.tag} className={classes.entry}>
               <article className={classes.card}>
                 <header className={classes.entryHeader}>
                   <h2 className={classes.version}>{release.name}</h2>
-                  {index === 0 && <span className={classes.latest}>{t("latest")}</span>}
+                  {release.tag === latestTag && <span className={classes.latest}>{t("latest")}</span>}
+                  {release.prerelease && <span className={classes.prerelease}>{t("prerelease")}</span>}
                   {release.publishedAt && (
                     <time className={classes.date} dateTime={release.publishedAt}>
                       {date.format(new Date(release.publishedAt))}
                     </time>
                   )}
                 </header>
+
+                {release.prerelease && (
+                  <p className={classes.prereleaseNotice} role="note">{t("prereleaseNotice")}</p>
+                )}
 
                 {release.body ? (
                   <div className={classes.body}>

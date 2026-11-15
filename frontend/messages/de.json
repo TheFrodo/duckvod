@@ -33,6 +33,8 @@
     "title": "Changelog",
     "subtitle": "Alle veröffentlichten Versionen von DuckVOD und was sich geändert hat.",
     "latest": "Aktuell",
+    "prerelease": "Pre-Release",
+    "prereleaseNotice": "Vorabversion: Die neuen Funktionen werden noch getestet, es kann zu Fehlern kommen.",
     "empty": "Die Versionshinweise konnten gerade nicht geladen werden. Bitte später erneut versuchen.",
     "noNotes": "Für diese Version gibt es keine Beschreibung.",
     "viewOnGithub": "Auf GitHub ansehen →"
@@ -1179,7 +1181,9 @@
   },
   "TestBanner": {
     "label": "Testversion",
-    "text": "Diese Version ist eine Testversion von DuckVOD. Funktionen können unfertig sein und es kann zu Fehlern kommen."
+    "text": "Diese Version ist eine Testversion von DuckVOD. Funktionen können unfertig sein und es kann zu Fehlern kommen.",
+    "prereleaseLabel": "Pre-Release",
+    "prereleaseText": "Diese Version ist eine Vorabversion von DuckVOD. Neue Funktionen werden noch getestet und es kann zu Fehlern kommen."
   },
   "Downloads": {
     "title": "Downloads",
