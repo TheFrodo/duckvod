@@ -88,6 +88,7 @@ func SetupApplication(ctx context.Context) (*Application, error) {
 	db := database.NewDatabase(ctx, database.DatabaseConnectionInput{
 		DBString: dbString,
 		IsWorker: false,
+		MaxConns: envAppConfig.DB_MAX_CONNS,
 	})
 
 	// application migrations
@@ -131,9 +132,8 @@ func SetupApplication(ctx context.Context) (*Application, error) {
 			ClientId:     envConfig.TwitchClientId,
 			ClientSecret: envConfig.TwitchClientSecret,
 		}
-		_, err = platformTwitch.Authenticate(ctx)
-		if err != nil {
-			log.Panic().Err(err).Msg("Error authenticating to Twitch")
+		if _, err := platformTwitch.Authenticate(ctx); err != nil {
+			log.Warn().Err(err).Msg("failed to authenticate with Twitch; continuing startup without Twitch connectivity")
 		}
 	}
 

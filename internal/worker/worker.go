@@ -50,6 +50,7 @@ func SetupWorker(ctx context.Context) (*tasks_worker.RiverWorkerClient, error) {
 	db := database.NewDatabase(ctx, database.DatabaseConnectionInput{
 		DBString: dbString,
 		IsWorker: true,
+		MaxConns: envAppConfig.DB_MAX_CONNS,
 	})
 
 	riverClient, err := tasks_client.NewRiverClient(tasks_client.RiverClientInput{
@@ -66,9 +67,8 @@ func SetupWorker(ctx context.Context) (*tasks_worker.RiverWorkerClient, error) {
 			ClientId:     envConfig.TwitchClientId,
 			ClientSecret: envConfig.TwitchClientSecret,
 		}
-		_, err = platformTwitch.Authenticate(ctx)
-		if err != nil {
-			return nil, err
+		if _, err := platformTwitch.Authenticate(ctx); err != nil {
+			log.Warn().Err(err).Msg("failed to authenticate with Twitch; continuing startup without Twitch connectivity")
 		}
 	}
 
@@ -85,6 +85,7 @@ func SetupWorker(ctx context.Context) (*tasks_worker.RiverWorkerClient, error) {
 	riverWorkerClient, err := tasks_worker.NewRiverWorker(tasks_worker.RiverWorkerInput{
 		Context:                 ctx,
 		DB_URL:                  dbString,
+		DBMaxConns:              envAppConfig.DB_MAX_CONNS,
 		DB:                      db,
 		LiveService:             liveService,
 		PlatformTwitch:          platformTwitch,

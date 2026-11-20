@@ -73,6 +73,12 @@
     "error": "Fehler beim Laden der Warteschlange",
     "loading": "Warteschlange wird geladen",
     "cancel": "Warteschlangen-Element wurde abgebrochen",
+    "multiCancel": "Warteschlangen-Einträge wurden abgebrochen",
+    "multiCancelPartial": "{failed} von {total} Warteschlangen-Einträgen konnten nicht vollständig verarbeitet werden. Klicke erneut, um die restlichen Einträge zu wiederholen.",
+    "bulk": {
+      "cancelOne": "1 Warteschlangen-Eintrag abbrechen",
+      "cancelMany": "{number} Warteschlangen-Einträge abbrechen"
+    },
     "column": {
       "id": "ID",
       "channel": "Kanal",
@@ -96,6 +102,7 @@
       "cancel": {
         "title": "Warteschlangen-Element abbrechen",
         "text": "Bist du Sicher, dass du dieses Warteschlangen-Element abbrechen möchten?",
+        "multiText": "Möchtest du wirklich {number} Warteschlangen-Einträge abbrechen?",
         "description": "Bei Live-Archiven wird der Video- und Chat-Download gestoppt und die Nachbearbeitung gestartet. Bei VOD-Archiven werden alle Aufgaben gestoppt.",
         "delete": "Video und Videodateien löschen",
         "block": "Video-ID blockieren"
@@ -539,7 +546,11 @@
       "actions": "Aktionen"
     },
     "drawer": "Überwachter Kanal",
-    "deleteModal": "Kanal-Überwachung löschen"
+    "deleteModal": "Kanal-Überwachung löschen",
+    "selectAllButton": "Alle auswählen",
+    "bulkEditButton": "{count} ausgewählte bearbeiten",
+    "bulkDeleteButton": "{count} ausgewählte löschen",
+    "clearSelectionButton": "Auswahl aufheben"
   },
   "AdminBlockedVideosComponents": {
     "validation": {
@@ -744,7 +755,19 @@
     "submitButton": "Kanal-Überwachung erstellen",
     "editButton": "Kanal-Überwachung bearbeiten",
     "updateMetadataLabel": "Metadaten aktualisieren",
-    "updateMetadataDescription": "Aktualisiere die Metadaten des Livestreams nach {minutes} Minuten, nachdem die Livestream-Archivierung gestartet wurde. Dazu gehören Thumbnails und Titel. Auf 0 setzen, um es zu deaktivieren."
+    "updateMetadataDescription": "Aktualisiere die Metadaten des Livestreams nach {minutes} Minuten, nachdem die Livestream-Archivierung gestartet wurde. Dazu gehören Thumbnails und Titel. Auf 0 setzen, um es zu deaktivieren.",
+    "channelsLabel": "Kanal/Kanäle",
+    "selectChannelsNotification": "Wähle mindestens einen Kanal aus",
+    "bulkCreatePartialNotification": "{succeeded} beobachtete(r) Kanal/Kanäle erstellt, {failed} fehlgeschlagen",
+    "bulkEditButton": "{count} beobachtete Kanäle bearbeiten",
+    "bulkEditNotification": "{count, plural, one {Beobachteter Kanal bearbeitet} other {# beobachtete Kanäle bearbeitet}}",
+    "bulkEditPartialNotification": "{succeeded} beobachtete(r) Kanal/Kanäle bearbeitet, {failed} fehlgeschlagen",
+    "bulkEditAlertTitle": "{count} beobachtete Kanäle werden bearbeitet",
+    "bulkEditAlertText": "Alle Einstellungen unten, einschließlich Titel-Regex und Kategorien, überschreiben die bestehenden Werte aller ausgewählten Kanäle.",
+    "bulkDeleteConfirmText": "Möchtest du diese {count} beobachteten Kanäle wirklich löschen?",
+    "bulkDeleteButton": "{count} beobachtete Kanäle löschen",
+    "bulkDeleteNotification": "{count, plural, one {Beobachteter Kanal gelöscht} other {# beobachtete Kanäle gelöscht}}",
+    "bulkDeletePartialNotification": "{succeeded} beobachtete(r) Kanal/Kanäle gelöscht, {failed} fehlgeschlagen"
   },
   "AuthComponents": {
     "validation": {
@@ -971,6 +994,9 @@
     "theaterModeIconTooltip": "Theater Mode",
     "hideChatIconTooltip": "Chat verbergen",
     "showChatIconTooltip": "Chat anzeigen",
+    "absoluteTime": "Absolute Zeit",
+    "pinAbsoluteTime": "Absolute Zeit anheften und Position speichern",
+    "unpinAbsoluteTime": "Absolute Zeit lösen",
     "absoluteTimeIconTooltip": "Absolute Zeit umschalten",
     "sourceViewsTooltip": "Quell-views",
     "localViewsTooltip": "Lokale views",
